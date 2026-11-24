@@ -92,6 +92,12 @@
 git -C ~/.claude/skills/agile-crew pull
 ```
 
+## 問題與建議
+
+- 碰到問題、想要新功能：到 [Issues](https://github.com/leo0823wu/agile-crew/issues) 開一筆。
+- 想問怎麼用、聊聊想法：到 [Discussions](https://github.com/leo0823wu/agile-crew/discussions)。
+- 開之前請拿掉公司名稱、主機、帳號、個資等內容，這兩個地方所有人都看得到。
+
 ---
 
 <a id="english"></a>
@@ -143,3 +149,9 @@ See `references/shareable.md` for the split.
 ```
 git -C ~/.claude/skills/agile-crew pull
 ```
+
+## Questions and suggestions
+
+- Found a problem or want a feature: open an [issue](https://github.com/leo0823wu/agile-crew/issues).
+- Questions about how to use it, or ideas to talk through: use [Discussions](https://github.com/leo0823wu/agile-crew/discussions).
+- Both are public. Remove company names, hosts, accounts and personal data before posting.
