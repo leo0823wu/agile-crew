@@ -42,6 +42,10 @@ def main():
         write(t, [user, asst(120000), user, asst(310000)])
         r = cw.build(t, "s1", state_dir=st)
         check("31 萬：提醒，兩段話都有數字", bool(r) and "31 萬" in r[0] and "31 萬" in r[1])
+        check("給 Claude 的話：先寫交接單、有工具就自己開新的工作階段、沒有才請使用者開",
+              bool(r) and "交接單" in r[1] and "start_session" in r[1] and "沒有這個工具才請使用者自己開" in r[1]
+              and "交接單：<專案紀錄路徑>" in r[1])
+        check("給使用者的話：講 Claude 會寫交接單並開好新的工作階段", bool(r) and "交接單" in r[0] and "開好" in r[0])
         check("31 萬第二次送訊息：不重複提醒", cw.build(t, "s1", state_dir=st) is None)
 
         write(t, [user, asst(310000), user, asst(395000)])

@@ -2,7 +2,8 @@
 
 從工作階段紀錄檔的尾端找最後一則回覆的 context 大小（輸入＋寫快取＋讀快取）。
 超過門檻（預設 30 萬）提醒一次，之後每再多一段（預設 10 萬）再提醒一次；摘要後掉回門檻以下就重新計。
-提醒同時給使用者（systemMessage）與 Claude（additionalContext：先講一句，換一件事就先寫交接再開新的）。
+提醒同時給使用者（systemMessage）與 Claude（additionalContext：先講一句，換一件事就先寫交接單、
+再由 Claude 用開新工作階段的工具開好；沒有那個工具才請使用者自己開。做法見 references/handoff.md）。
 
 任何錯誤都安靜結束（exit 0），不能擋住使用者送出訊息。
 設定：<本地>/config.json 的 "context_watch": {"warn": 300000, "step": 100000}；設成 false 可關。
@@ -79,10 +80,15 @@ def build(transcript_path, session_id, warn=WARN, step=STEP, state_dir=None):
     if lv < done:      # 摘要後變短：只把紀錄降回去，不提醒
         return None
     wan = ctx / 10000.0
-    user = "這個對話已經累積約 %.0f 萬 token，之後每問一句都要把這些重帶一次。要換一件事時，建議開新的工作階段。" % wan
+    user = ("這個對話已經累積約 %.0f 萬 token，之後每問一句都要把這些重帶一次。"
+            "換一件事或告一段落時，Claude 會先寫好交接單，再幫你把新的工作階段開好。" % wan)
     claude = ("【對話長度提醒（hook 自動量）】這個工作階段的 context 約 %.0f 萬 token，每一步都會重帶。"
               "回覆開頭先用一句話告訴使用者這件事。接著判斷使用者這句話：換一件不相關的事、或同一件事已經告一段落 → "
-              "先照〈一件事一個工作階段〉寫好交接（專案紀錄的目前狀況、待辦、工作進度、這次的決定），再建議開新的工作階段；"
+              "照技能 references/handoff.md：先把專案紀錄的〈交接單〉整段改寫（下一步的第一個動作、試過但沒用的方法、"
+              "做到一半的狀態、使用者這次講過的偏好），專案紀錄照常更新；寫完由你開新的工作階段——"
+              "有開新工作階段的工具（桌面 app 的 mcp__ccd_session__start_session，沒載入先用 ToolSearch 找）就用它，"
+              "context 用 fresh，說明第一行寫「交接單：<專案紀錄路徑>」再貼交接單四項；沒有這個工具才請使用者自己開，"
+              "並給他一句可以直接貼過去的話。"
               "同一件事還在來回修改 → 講完那一句就繼續做，不用停。讀大量內容的工作改交給子代理，主對話只收結論。" % wan)
     return user, claude
 

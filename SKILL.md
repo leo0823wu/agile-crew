@@ -57,7 +57,7 @@ UI/UX、QA 用 **Agent 工具開子代理**（彼此獨立的就同一則訊息�
 - **踩坑表不整份讀**。再犯最多的規則已經整理在本檔最後〈必守規則〉，載入技能就有。這次會碰到的技術（部署、資料庫、Excel、Notion…），照 `references/lessons.md` 的索引找到段落代號（T1～T7、W1～W6），用 Grep 找那個段落標題的行號、只讀那一段。看到編號（L-xxx）要查細節，Grep 那個編號。中、大的需求在計畫裡寫明這次會碰到哪幾條、怎麼避開。
 - **本地資料夾 `<本地>`**（預設 `~/.claude/dev-team-local/`，見 `references/shareable.md`）：`local-rules.md` 短，中、大的需求整份讀（這個使用者／公司的慣例：紀錄放哪、部署文件、檔案放置），小的需求只在要部署、要放檔案時讀；`lessons-local.md` 不整份讀，要查某個編號的本地細節、或碰到公司的系統與主機時 Grep。本地規則跟技能衝突時，以本地規則為準。
 - **回顧紀錄、改版紀錄不讀檔**：開工 hook（`session_brief.py`）已經把還沒做完的 ⏳ 帶進對話，跟這次有關的先套用。沒裝 hook 的環境跑 `python -X utf8 -I scripts/retro_tail.py`（只印最近 5 列的摘要）。
-- **專案紀錄只讀現況**：用 `python -X utf8 -I scripts/find_project.py <專案名／repo 名／網址關鍵字>` 找到紀錄與程式的位置（不用讀整份專案總表），讀那一份專案紀錄（目前狀況、待辦）。同資料夾的歷史檔（`find_project.py` 會印出位置）是舊的進度與已解決的問題，要查舊事才 Grep。沒有紀錄的新專案照本地規則建一份；本地規則沒寫就先看專案的 README／`CLAUDE.md`，要建紀錄時先問使用者放哪（給選項＋推薦）。
+- **專案紀錄只讀現況**：用 `python -X utf8 -I scripts/find_project.py <專案名／repo 名／網址關鍵字>` 找到紀錄與程式的位置（不用讀整份專案總表），讀那一份專案紀錄（**有〈交接單〉先讀它**，再讀目前狀況、待辦）。同資料夾的歷史檔（`find_project.py` 會印出位置）是舊的進度與已解決的問題，要查舊事才 Grep。沒有紀錄的新專案照本地規則建一份；本地規則沒寫就先看專案的 README／`CLAUDE.md`，要建紀錄時先問使用者放哪（給選項＋推薦）。
 - 專案有〈檢討〉文件的（中、大的需求）：只讀改進清單裡標 ⏳ 的。
 - **別的工作階段留下的改動**：開工前跑 `git worktree list`，逐一看各 worktree 的 `git status`；有未 commit、跟這次要改同一批檔案的，先問使用者怎麼處理（審過單獨 commit 再接著做，或等那邊收尾），不要直接在上面改。L-235
 - **在 git worktree 開工**：先確認分支基底是專案的開發分支（專案紀錄或 README 寫的；沒寫就問）（`git rev-list --count HEAD..<開發分支>` 要是 0）；app 開的 worktree 常從落後的 master 分出（L-087）。
@@ -172,7 +172,8 @@ UI/UX、QA 用 **Agent 工具開子代理**（彼此獨立的就同一則訊息�
   - 換一件不相關的事 → 開新的工作階段。
   - 同一件事做到告一段落（交付、等別人回覆）→ 開新的工作階段。
   - 同一件事還在來回修改（例：同一張圖一直改）→ 留在原本的，前面的討論還用得到。
-  **開新的之前一定先交接**，沒寫完不准開：①專案紀錄「目前狀況」改寫成最新（做到哪、卡在哪、下一步）②「待辦」列出沒做完的、在等誰回覆的 ③「工作進度」加一列 ④這次使用者定案的規則與決定寫進專案紀錄或本地規則（不只留在對話裡）⑤要留下來的暫存檔搬到專案資料夾、程式碼有沒有 commit／推送寫明。交接寫完才開新的工作階段（環境有開新工作階段的工具就用它），給新工作階段的說明只寫「讀哪一份專案紀錄＋接下來要做什麼」，不重講背景——紀錄裡沒有的，代表交接沒寫完。
+  **開新的之前一定先交接**，沒寫完不准開（照 `references/handoff.md`）：①專案紀錄的〈交接單〉整段改寫，四項都要有——下一步的第一個動作（開哪個檔、跑哪個指令）、試過但沒用的方法、做到一半的狀態（沒推的檔、背景工作、在等使用者回哪一題）、使用者這次講過的偏好 ②專案紀錄照常更新（目前狀況、待辦、工作進度）。
+  **寫完由你把新的工作階段開好**：有開新工作階段的工具（桌面 app 的 `mcp__ccd_session__start_session`）就用它，說明第一行寫 `交接單：<專案紀錄路徑>`、再貼四項；沒有才提醒使用者自己開。接手時先讀交接單、從第一個動作開始，不重做寫明做過的事。
 
 ---
 
@@ -210,9 +211,10 @@ UI/UX、QA 用 **Agent 工具開子代理**（彼此獨立的就同一則訊息�
 - `references/edge-case-checklist.md` — 全面情境盤點清單（PM 與 QA 用，需要時讀）
 - `references/confirm-doc.md` — **給需求方確認的文件**（要業務主管、需求方看完回覆的對照表／名單）：固定結構、寫法、轉傳訊息範本；交件前跑 `scripts/check_plain_doc.py`
 - `references/agent-briefs.md` — PM／UI-UX／QA 子代理的任務簡報範本與安全限制；平行實作的共用段落（需要時讀）
+- `references/handoff.md` — 交接：交接單格式、開新的工作階段、接手開工、指標（要交接時讀）
 - `references/retro.md` — 團隊回顧的做法（紀錄寫在 `<本地>/retro-log.md`）
 - `references/shareable.md` — **技能與本地分層**：技能只放通用內容可分享；本地資料夾放個人／公司內容、回顧紀錄、改版紀錄；判斷規則與檢查
 - `templates/` — 本地資料夾的範本；第一次用跑 `scripts/init_local.py` 建立
-- `scripts/` — `find_project.py`（用關鍵字找專案紀錄與程式位置，不用讀總表）、`retro_tail.py`（最近幾列回顧的摘要）、`split_record.py`（把專案紀錄裡舊的進度、已解決的問題搬到歷史檔）、`token_usage.py`（從工作階段紀錄量 token 花在哪：動手前讀多少、長對話占比、子代理占比）、`token_weekly.py`（每週用量報表：按天、按資料夾、最貴的工作階段、跟前一週比；可排程，不花 token）、`init_local.py`（建本地資料夾）、`lesson_id.py`（踩坑編號取號；本地專屬用 `--local` 取 P- 編號）、`team_metrics.py`（回顧指標、改版成效、每週趨勢 `--trend`）、`round_time.py`（每輪耗時：從工作階段紀錄算、回填回顧紀錄 `--fill`）、`check_shareable.py`（技能裡有沒有私人資料；也檢查主檔有沒有寫進日期、超過長度上限）、`surefire_check.py`、`diff_sheets.py`（兩份表格逐格比對；說「一樣／原樣」前必跑）、`find_table_readers.py`（寫資料表前列出所有 repo 的讀寫處）、`check_plain_doc.py`（給非技術的人確認的文件夠不夠白話、有沒有說要他做什麼）、`check_knowledge_doc.py`（知識文件、教材每節有沒有「實際走一遍」的例子）、`compare_notion_text.py`（Notion 抓回來的內容跟底稿比對、找錯字）、`check_text_overflow.py`（選單／頁籤這類一排項目在各寬度有沒有壓字、超出格子）
+- `scripts/` — `find_project.py`（用關鍵字找專案紀錄與程式位置，不用讀總表）、`retro_tail.py`（最近幾列回顧的摘要）、`split_record.py`（把專案紀錄裡舊的進度、已解決的問題搬到歷史檔）、`token_usage.py`（從工作階段紀錄量 token 花在哪：動手前讀多少、長對話占比、子代理占比）、`token_weekly.py`（每週用量報表：按天、按資料夾、最貴的工作階段、跟前一週比、交接順不順 `handoff_metrics.py`；可排程，不花 token）、`init_local.py`（建本地資料夾）、`lesson_id.py`（踩坑編號取號；本地專屬用 `--local` 取 P- 編號）、`team_metrics.py`（回顧指標、改版成效、每週趨勢 `--trend`）、`round_time.py`（每輪耗時：從工作階段紀錄算、回填回顧紀錄 `--fill`）、`check_shareable.py`（技能裡有沒有私人資料；也檢查主檔有沒有寫進日期、超過長度上限）、`surefire_check.py`、`diff_sheets.py`（兩份表格逐格比對；說「一樣／原樣」前必跑）、`find_table_readers.py`（寫資料表前列出所有 repo 的讀寫處）、`check_plain_doc.py`（給非技術的人確認的文件夠不夠白話、有沒有說要他做什麼）、`check_knowledge_doc.py`（知識文件、教材每節有沒有「實際走一遍」的例子）、`compare_notion_text.py`（Notion 抓回來的內容跟底稿比對、找錯字）、`check_text_overflow.py`（選單／頁籤這類一排項目在各寬度有沒有壓字、超出格子）
 - `hooks/` — 開工帶入（`session_brief.py`）、擋已知錯誤指令（`guard_tool_input.py`）、提醒（`tool_hints.py`）、擋整份讀踩坑表與回顧紀錄（`read_guard.py`）、對話過長提醒（`context_watch.py`）、收尾檢查（`stop_gate.py`＝回顧 `retro_gate.py`＋專案紀錄 `record_gate.py`）；安裝方式見 `README.md`
 - `<本地>/skill-changelog.md` — 技能改版紀錄：每次改技能記一列，之後驗證有效／沒效

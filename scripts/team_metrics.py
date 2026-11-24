@@ -89,11 +89,23 @@ def retro_rows():
                 "ask": num(r"追問(?:狀況)?\s*(\d+)", c[mi]),
                 "qa": num(r"QA 退回\s*(\d+)", c[mi]),
                 "rework": rework(c[mi]),
+                # 接手的工作階段才寫這兩項（references/handoff.md）；沒寫是 None，不當成 0
+                "h_ask": (lambda m: int(m.group(1)) if m else None)(re.search(r"接手問\s*(\d+)", c[mi])),
+                "h_redo": (lambda m: int(m.group(1)) if m else None)(re.search(r"接手重做\s*(\d+)", c[mi])),
                 "dur": RT.parse_cell(c[di]) if di is not None and di < len(c) else None,
                 "done": len(re.findall(r"✅", " ".join(c[4:]))),
                 "open": len(re.findall(r"⏳", " ".join(c[4:]))),
             })
     return rows
+
+
+def handoff_line(rows, label):
+    """接手的回顧（指標摘要有寫 `接手問 N` 或 `接手重做 N` 的列）合計。"""
+    hs = [r for r in rows if r.get("h_ask") is not None or r.get("h_redo") is not None]
+    if not hs:
+        return f"{label}接手的回顧 0 列"
+    return (f"{label}接手的回顧 {len(hs)} 列：接手問 合計 {sum(r['h_ask'] or 0 for r in hs)}、"
+            f"接手重做 合計 {sum(r['h_redo'] or 0 for r in hs)}")
 
 
 def weekly_trend(rows, weeks):
@@ -252,6 +264,7 @@ def main():
     p(f"- 這週回顧 {len(week)} 次（全部 {len(rr)} 次）")
     p(f"- 這週平均：使用者糾正 {avg('corr', week)}、追問狀況 {avg('ask', week)}、QA 退回 {avg('qa', week)}")
     p(f"- 全部平均：使用者糾正 {avg('corr', rr)}、追問狀況 {avg('ask', rr)}、QA 退回 {avg('qa', rr)}")
+    p("- " + handoff_line(week, "這週") + "；" + handoff_line(rr, "全部"))
     p(f"- 行動項關閉率：這週 {rate(done_w, open_w)}（✅{done_w}／⏳{open_w}）；全部 {rate(done_all, open_all)}（✅{done_all}／⏳{open_all}）")
     p()
     p("## 技能改版與成效（skill-changelog.md）")

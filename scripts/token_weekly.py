@@ -173,6 +173,11 @@ def report(start, top=8, root=None):
                      % (s["title"] or "（未命名）", s["folder"], pct(s["c"]["w"], T["w"]), s["peak"] / 1e4, pct(s["c"]["long"], s["c"]["main"]), LONG / 1e4))
     else:
         L.append("- 沒有「占全週 8%% 以上、而且一半以上花在超過 %d 萬之後」的工作階段。" % (LONG / 1e4))
+    try:      # 交接順不順（references/handoff.md）；算不出來不影響其他部分
+        import handoff_metrics
+        L += [""] + handoff_metrics.section(lo, hi, root, title=lambda p: meta(p)[0])
+    except Exception as ex:
+        L += ["", "## 交接（接手的工作階段動手前做了什麼）", "", "- （算不出來：%s）" % ex]
     L += ["", "## 三個指標與細項（跟 token_usage.py 同一套算法）", ""] + ["- " + x for x in three_numbers(lo, hi)]
     L += ["", "## 按天", "", "| 日期 | 占比 | 加權成本 | 呼叫次數 |", "|---|---|---|---|"]
     for k in sorted(k for k in R if k[0] == "day"):

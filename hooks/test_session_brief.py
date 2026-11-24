@@ -23,12 +23,20 @@ def write(path, text):
 write(os.path.join(LOCAL, "config.json"), json.dumps(
     {"project_index": os.path.join(WORK, "index.md"), "work_root": WORK, "code_root": CODE}))
 write(os.path.join(WORK, "index.md"),
-      "| 專案 | 紀錄 |\n|---|---|\n| Alpha | [紀錄](groupA/Alpha/record.md) |\n| Beta | [紀錄](groupA/Beta/record.md) |\n")
+      "| 專案 | 紀錄 |\n|---|---|\n| Alpha | [紀錄](groupA/Alpha/record.md) |\n| Beta | [紀錄](groupA/Beta/record.md) |\n"
+      "| Gamma | [紀錄](groupA/Gamma/record.md) |\n")
 write(os.path.join(WORK, "groupA", "Alpha", "record.md"),
       "# Alpha\n\n## 基本資料\n\n| 項目 | 內容 |\n|---|---|\n| 程式碼 | 本機：`alpha-web`（main） |\n\n"
+      "## 交接單\n\n> 2026-01-05 10:00 寫。給下一個接手的工作階段。\n\n- **下一步的第一個動作**：開 login.jsp 第 40 行\n"
+      "- **試過但沒用的方法**：清快取沒用\n- **做到一半的狀態**：無\n- **使用者這次講過的偏好**：無\n\n"
       "## 待辦\n\n- ⏳ 修 alpha 的登入頁\n- ✅ 已完成的事\n\n## 資安檢測\n\n- ⏳ alpha 金鑰輪替\n")
+write(os.path.join(WORK, "groupA", "Gamma", "record.md"),
+      "# Gamma\n\n## 基本資料\n\n| 項目 | 內容 |\n|---|---|\n| 程式碼 | 本機：`gamma-app` |\n\n"
+      "## 交接單\n\n無（2026-01-06 已交付，沒有進行中的工作）\n\n## 待辦\n\n- ⏳ gamma 的報表\n")
 write(os.path.join(WORK, "groupA", "Beta", "record.md"),
       "# Beta\n\n## 基本資料\n\n| 項目 | 內容 |\n|---|---|\n| 程式碼 | 本機：`beta-api` |\n| 相關文件 | 也參考 `alpha-web` |\n\n"
+      "## 交接單\n\n> YYYY-MM-DD HH:MM 寫。\n\n- **下一步的第一個動作**：<寫到開哪個檔>\n- **試過但沒用的方法**：無\n"
+      "- **做到一半的狀態**：\n- **使用者這次講過的偏好**：<這次講的>\n\n"
       "## 待辦\n\n- ⏳ beta 的匯出\n")
 write(os.path.join(LOCAL, "retro-log.md"),
       "# 回顧紀錄\n\n## 回顧紀錄（最新在最上面）\n\n| 日期 | 專案 | 指標 | 發現 | 已改 | 狀態 |\n|---|---|---|---|---|---|\n"
@@ -58,6 +66,11 @@ cases = [
     (os.path.join(WORK, "groupA", "Beta", "screens"), ["beta 的匯出"], []),
     (os.path.join(root, "elsewhere"), ["沒對到專案紀錄"], ["專案待辦 ⏳"]),
     (os.path.join(CODE, "no-such-repo"), ["沒對到專案紀錄"], ["專案待辦 ⏳"]),
+    # 交接單：有內容整段帶入；只有範本空欄位、或寫「無（已交付）」不帶
+    (os.path.join(CODE, "alpha-web"), ["### 交接單（Alpha", "開 login.jsp 第 40 行", "清快取沒用", "接手問 N"], []),
+    (os.path.join(WORK, "groupA", "Beta"), ["beta 的匯出"], ["### 交接單"]),
+    (os.path.join(CODE, "gamma-app"), ["gamma 的報表"], ["### 交接單"]),
+    (os.path.join(root, "elsewhere"), [], ["### 交接單"]),
     # 回顧 ⏳、改版待驗證、本地 lessons 再犯未成機制
     (os.path.join(root, "elsewhere"), ["補一支測試", "子代理超範圍", "P-001（再犯 3）"], ["忘了回顧", "某專案的測試類別"]),
 ]

@@ -6,6 +6,7 @@
 3. 技能 lessons-*.md 與 `<本地>/lessons-local.md` 裡再犯 >= 2、還不是機制的列
 4. 這個工作目錄對到的專案紀錄裡標 ⏳ 的待辦（要 `<本地>/config.json` 設 project_index，沒設就略過）
 5. 技能裡有沒有個人／公司資料（scripts/check_shareable.py）
+6. 對到的專案紀錄有〈交接單〉就整段帶入（上一個工作階段留給接手的人；格式見 references/handoff.md），放在最前面
 
 `<本地>`：環境變數 DEV_TEAM_LOCAL，沒設就是 ~/.claude/dev-team-local。
 只讀不寫；任何錯誤都安靜放行（exit 0），不能擋住開工。
@@ -23,6 +24,7 @@ LOCAL = os.environ.get("DEV_TEAM_LOCAL") or os.path.join(os.path.expanduser("~")
 RETRO_ROWS = 8      # 看最近幾列回顧
 MAX_ITEMS = 8       # 每一類最多列幾項
 CUT = 90            # 每項最多幾個字
+HANDOFF_MAX = 1500  # 交接單最多帶幾個字進對話
 RECORD_WARN = 6000  # 專案紀錄超過幾個字就提醒整理（只放現況，舊的搬到歷史檔）
 
 
@@ -154,6 +156,22 @@ def project_todos(path):
     return out
 
 
+def project_handoff(path):
+    """專案紀錄的〈交接單〉（references/handoff.md）：有內容就整段回傳（最多 HANDOFF_MAX 字），
+    沒有這一段、只有範本的空欄位、或每項都寫「無」就回空字串。"""
+    body = section(read(path), "交接單").strip()
+    filled = 0
+    for line in body.splitlines():
+        if not line.strip() or line.lstrip().startswith(">"):
+            continue
+        value = re.sub(r"^\s*[-*]?\s*(\*\*[^*]*\*\*)?[：:\s]*", "", line).strip(" 。")
+        if value and not re.match(r"^(<[^>]*>|無|無（.*）)$", value):
+            filled += 1
+    if not filled:
+        return ""
+    return body if len(body) <= HANDOFF_MAX else body[:HANDOFF_MAX] + "…（太長，其餘看專案紀錄）"
+
+
 def shareable_hits():
     r = subprocess.run([sys.executable, "-I", os.path.join(SKILL, "scripts", "check_shareable.py"), "--quiet"],
                        capture_output=True, timeout=8)
@@ -205,6 +223,19 @@ def main():
     if not os.path.isdir(LOCAL):
         parts.append("### 還沒有本地資料夾：照 references/shareable.md「第一次用」建立（至少 local-rules.md、private-terms.txt）")
     retro, pending, lessons = [], [], []
+    records, handoffs = None, 0
+    try:
+        records = project_records(cwd, config())
+        for path in records or []:
+            text = project_handoff(path)
+            if text:
+                handoffs += 1
+                parts += [f"### 交接單（{os.path.basename(os.path.dirname(path))}；上一個工作階段留給接手的人）",
+                          f"這次是接著做這件事的話：先照「下一步的第一個動作」開始，交接單寫明做過、試過的不重做；"
+                          f"不夠用（要回頭問使用者、要重讀一批檔）就記下缺哪一項，回顧時填 `接手問 N`、`接手重做 N`。來源：{path}",
+                          text]
+    except Exception:
+        pass
     try:
         retro = retro_open_items()
         parts += block("回顧行動項還沒做完（retro-log.md）", retro, "看 retro-log.md〈回顧紀錄〉")
@@ -223,7 +254,6 @@ def main():
         pass
     todo_count = 0
     try:
-        records = project_records(cwd, config())
         if records == []:
             parts.append("### 專案待辦：這個工作目錄沒對到專案紀錄，有在做專案就先照本地規則找到它")
         for path in records or []:
@@ -257,6 +287,8 @@ def main():
     parts.append("新增 lessons 列要編號：`python -I ~/.claude/skills/dev-team/scripts/lesson_id.py next`（加鎖取號）。"
                  "通用的寫進技能、個人／公司的寫進本地（references/shareable.md）。")
 
+    if handoffs:
+        share_note = "、有交接單" + share_note
     summary = (f"開工提醒：回顧未完成 {len(retro)} 項、技能改版待驗證 {len(pending)} 項、"
                f"再犯未成機制 {len(lessons)} 條、專案待辦 {todo_count} 項{share_note}（已帶入對話）")
     out = {
