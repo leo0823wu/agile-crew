@@ -53,8 +53,11 @@ def rename_text(s):
 def is_link(p):
     if os.path.islink(p):
         return True
-    isj = getattr(os.path, "isjunction", None)
-    return bool(isj and isj(p))
+    # Windows 的目錄連結（junction）：3.12 以前 islink 認不出來，直接看「重新解析點」屬性
+    try:
+        return bool(getattr(os.lstat(p), "st_file_attributes", 0) & 0x400)
+    except OSError:
+        return False
 
 
 def make_link(link, target):
@@ -97,7 +100,14 @@ def move_dir(run, old, new, what):
     if os.path.exists(new):
         print(f"！{old} 和 {new} 都在，沒有搬。請先看兩邊內容、手動合併後再重跑。")
         sys.exit(1)
-    run.do(f"搬資料夾：{old} → {new}", lambda: os.rename(old, new))
+    def fn():
+        try:
+            os.rename(old, new)
+        except OSError as e:
+            print(f"！搬不動 {old}（{e.__class__.__name__}）：多半是別的程式開著這個資料夾。"
+                  "關掉其他 Claude 工作階段、編輯器、停在這個資料夾裡的終端機後重跑；已經做的步驟不會重做。")
+            sys.exit(1)
+    run.do(f"搬資料夾：{old} → {new}", fn)
 
 
 def write_stubs(run, old_skill, new_skill):

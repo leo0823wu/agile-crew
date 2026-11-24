@@ -102,6 +102,7 @@ python -X utf8 -I ~/.claude/skills/dev-team/scripts/migrate_name.py            #
 python -X utf8 -I ~/.claude/skills/dev-team/scripts/migrate_name.py --apply    # 真的做
 ```
 
+- 舊資料夾不是用 `git clone` 裝的（解壓縮、複製來的）：第一行會失敗，改成把新版內容覆蓋進 `~/.claude/skills/dev-team` 再跑後兩行。
 - 它會把兩個資料夾改名、改 `settings.json` 的 hook 路徑與 `CLAUDE.md`、排程任務、記憶裡的舊名（`settings.json`、`CLAUDE.md` 先備份）。講「以前叫 dev-team」的句子也會被換掉，試跑時先看一眼。
 - 舊位置會留轉送檔與連結，已經開著的工作階段才不會找不到 hook。確定沒有東西在用舊路徑後跑 `migrate_name.py --remove-compat --apply` 拿掉；**不要用 `rm -rf` 刪 `dev-team-local`**，它是連結，會連新資料夾的內容一起刪。
 - 環境變數 `DEV_TEAM_LOCAL` 仍然認得，新名字是 `AGILE_CREW_LOCAL`。作業系統排程（工作排程器、cron）裡寫死的路徑要自己改。
@@ -167,4 +168,4 @@ python -X utf8 -I ~/.claude/skills/dev-team/scripts/migrate_name.py            #
 python -X utf8 -I ~/.claude/skills/dev-team/scripts/migrate_name.py --apply
 ```
 
-The script renames the skill folder and the local folder, and rewrites the old name in `settings.json` (hook paths), `CLAUDE.md`, scheduled tasks and memory files, after backing up the first two. It leaves forwarding stubs at the old paths so sessions that are already open keep working; remove them later with `--remove-compat --apply`. Do not `rm -rf` the old `dev-team-local`: it is a link to the new folder. The old `DEV_TEAM_LOCAL` variable still works. Open a new session afterwards and check that the skill list shows `agile-crew` and the session-start reminder appears.
+If the old folder is not a git clone, the first line fails: copy the new version over `~/.claude/skills/dev-team` instead, then run the other two lines. The script renames the skill folder and the local folder, and rewrites the old name in `settings.json` (hook paths), `CLAUDE.md`, scheduled tasks and memory files, after backing up the first two. It leaves forwarding stubs at the old paths so sessions that are already open keep working; remove them later with `--remove-compat --apply`. Do not `rm -rf` the old `dev-team-local`: it is a link to the new folder. The old `DEV_TEAM_LOCAL` variable still works. Open a new session afterwards and check that the skill list shows `agile-crew` and the session-start reminder appears.
