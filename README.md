@@ -2,7 +2,7 @@
 
 > [English version below](#english)
 >
-> 專案名稱、技能代號、資料夾名稱都是 `agile-crew`（hook 與腳本的路徑都用這個名字）。以前用舊名 `dev-team` 安裝的，見下面〈從舊名 dev-team 升級〉。
+> 專案名稱、技能代號、資料夾名稱都是 `agile-crew`（hook 與腳本的路徑都用這個名字）。
 
 這是一個 Claude Code 技能，讓 AI 不是「講什麼就只做什麼」，而是像一個小團隊在運作：
 你是決定做什麼、先做哪個的人；AI 分成 PM、系統規劃與開發、UI/UX、QA 四個角色，把需求做完、驗收過才交給你。
@@ -92,29 +92,13 @@
 git -C ~/.claude/skills/agile-crew pull
 ```
 
-## 從舊名 dev-team 升級
-
-以前技能代號叫 `dev-team`（資料夾 `~/.claude/skills/dev-team`、本地資料夾 `~/.claude/dev-team-local`）。升級三步：
-
-```
-git -C ~/.claude/skills/dev-team pull
-python -X utf8 -I ~/.claude/skills/dev-team/scripts/migrate_name.py            # 試跑：只列出會做什麼
-python -X utf8 -I ~/.claude/skills/dev-team/scripts/migrate_name.py --apply    # 真的做
-```
-
-- 舊資料夾不是用 `git clone` 裝的（解壓縮、複製來的）：第一行會失敗，改成把新版內容覆蓋進 `~/.claude/skills/dev-team` 再跑後兩行。
-- 它會把兩個資料夾改名、改 `settings.json` 的 hook 路徑與 `CLAUDE.md`、排程任務、記憶裡的舊名（`settings.json`、`CLAUDE.md` 先備份）。講「以前叫 dev-team」的句子也會被換掉，試跑時先看一眼。
-- 舊位置會留轉送檔與連結，已經開著的工作階段才不會找不到 hook。確定沒有東西在用舊路徑後跑 `migrate_name.py --remove-compat --apply` 拿掉；**不要用 `rm -rf` 刪 `dev-team-local`**，它是連結，會連新資料夾的內容一起刪。
-- 環境變數 `DEV_TEAM_LOCAL` 仍然認得，新名字是 `AGILE_CREW_LOCAL`。作業系統排程（工作排程器、cron）裡寫死的路徑要自己改。
-- 做完新開一個工作階段：技能清單是 `agile-crew`、開工提醒有出現，才算完成。
-
 ---
 
 <a id="english"></a>
 
 # agile-crew: an agile workflow for one lead and an AI team
 
-> The project name, the skill id and the folder name are all `agile-crew` (the hooks and scripts use that path). If you installed it under the old name `dev-team`, see "Upgrading from the old name" at the end.
+> The project name, the skill id and the folder name are all `agile-crew` (the hooks and scripts use that path).
 >
 > The skill itself (`SKILL.md`, `references/`, templates, hook messages) is written in Traditional Chinese. Claude follows it in any language, and it reports in the language you use.
 
@@ -159,13 +143,3 @@ See `references/shareable.md` for the split.
 ```
 git -C ~/.claude/skills/agile-crew pull
 ```
-
-## Upgrading from the old name (`dev-team`)
-
-```
-git -C ~/.claude/skills/dev-team pull
-python -X utf8 -I ~/.claude/skills/dev-team/scripts/migrate_name.py            # dry run
-python -X utf8 -I ~/.claude/skills/dev-team/scripts/migrate_name.py --apply
-```
-
-If the old folder is not a git clone, the first line fails: copy the new version over `~/.claude/skills/dev-team` instead, then run the other two lines. The script renames the skill folder and the local folder, and rewrites the old name in `settings.json` (hook paths), `CLAUDE.md`, scheduled tasks and memory files, after backing up the first two. It leaves forwarding stubs at the old paths so sessions that are already open keep working; remove them later with `--remove-compat --apply`. Do not `rm -rf` the old `dev-team-local`: it is a link to the new folder. The old `DEV_TEAM_LOCAL` variable still works. Open a new session afterwards and check that the skill list shows `agile-crew` and the session-start reminder appears.
