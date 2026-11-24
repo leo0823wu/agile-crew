@@ -1,0 +1,19 @@
+{
+  "project_index": "",
+  "work_root": "",
+  "code_root": "",
+  "record_name": "project-record.md",
+  "history_suffix": "-history",
+  "knowledge_name": "project-notes.md",
+  "aliases": {},
+  "project_pointer": true,
+  "record_gate": {
+    "enabled": true,
+    "triggers": ["retro", "push"],
+    "idle_split_hours": 8,
+    "unmapped_code": "block",
+    "extra_code_roots": [],
+    "ignore": [],
+    "aliases": {}
+  }
+}
