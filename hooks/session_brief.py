@@ -165,7 +165,7 @@ def project_handoff(path):
         if not line.strip() or line.lstrip().startswith(">"):
             continue
         value = re.sub(r"^\s*[-*]?\s*(\*\*[^*]*\*\*)?[：:\s]*", "", line).strip(" 。")
-        if value and not re.match(r"^(<[^>]*>|無|無（.*）)$", value):
+        if value and not re.match(r"^(<[^>]*>|[（(]?無[）)]?|無（.*）|N/?A|none|-+|—+)$", value, re.I):
             filled += 1
     if not filled:
         return ""
@@ -227,7 +227,10 @@ def main():
     try:
         records = project_records(cwd, config())
         for path in records or []:
-            text = project_handoff(path)
+            try:
+                text = project_handoff(path)
+            except Exception:       # 一份讀不到不影響下一份
+                text = ""
             if text:
                 handoffs += 1
                 parts += [f"### 交接單（{os.path.basename(os.path.dirname(path))}；上一個工作階段留給接手的人）",

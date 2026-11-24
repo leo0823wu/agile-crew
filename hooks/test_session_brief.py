@@ -35,8 +35,8 @@ write(os.path.join(WORK, "groupA", "Gamma", "record.md"),
       "## 交接單\n\n無（2026-01-06 已交付，沒有進行中的工作）\n\n## 待辦\n\n- ⏳ gamma 的報表\n")
 write(os.path.join(WORK, "groupA", "Beta", "record.md"),
       "# Beta\n\n## 基本資料\n\n| 項目 | 內容 |\n|---|---|\n| 程式碼 | 本機：`beta-api` |\n| 相關文件 | 也參考 `alpha-web` |\n\n"
-      "## 交接單\n\n> YYYY-MM-DD HH:MM 寫。\n\n- **下一步的第一個動作**：<寫到開哪個檔>\n- **試過但沒用的方法**：無\n"
-      "- **做到一半的狀態**：\n- **使用者這次講過的偏好**：<這次講的>\n\n"
+      "## 交接單\n\n> YYYY-MM-DD HH:MM 寫。\n\n- **下一步的第一個動作**：<寫到開哪個檔>\n- **試過但沒用的方法**：（無）\n"
+      "- **做到一半的狀態**：N/A\n- **使用者這次講過的偏好**：<這次講的>\n\n"
       "## 待辦\n\n- ⏳ beta 的匯出\n")
 write(os.path.join(LOCAL, "retro-log.md"),
       "# 回顧紀錄\n\n## 回顧紀錄（最新在最上面）\n\n| 日期 | 專案 | 指標 | 發現 | 已改 | 狀態 |\n|---|---|---|---|---|---|\n"

@@ -78,6 +78,12 @@ def main():
             asst("2026-01-06T01:04:00.000Z", [("Edit", {"file_path": r"C:\code\alpha\login.jsp", "old_string": "a", "new_string": "b"})], ctx=120000),
             asst("2026-01-06T01:05:00.000Z", [("Read", {"file_path": r"C:\code\alpha\auth.java"})], ctx=130000),
         ])
+        # 接手開始之後才有人改交接單（工作階段 L）：不能被選成前一個
+        write(root, "llll", [
+            user("後來的事", "2026-01-06T08:00:00.000Z"),
+            asst("2026-01-06T08:01:00.000Z", [("Read", {"file_path": r"C:\code\alpha\new.css"}),
+                                              ("Write", {"file_path": REC, "content": "## 交接單\n後來寫的"})]),
+        ])
         # 只是在討論交接單的工作階段 C（行首不是「交接單：路徑」）：不算接手
         write(root, "cccc", [
             user("1. **交接單**：在範本（`C:\\work\\template.md`）加一段", "2026-01-06T03:00:00.000Z"),
@@ -104,7 +110,9 @@ def main():
         check("開始改檔時對話 12 萬", b.get("ctx") == 120000 and b.get("edited") is True)
         d = by.get("dddd", {})
         check("找不到前一個：重複欄是 None、標記沒改檔", d.get("reread") is None and d.get("rerun") is None and d.get("edited") is False)
-        check("這段期間寫交接單的工作階段 1 個（zzzz 在期間之前）", written == 1)
+        check("接手開始之後才寫交接單的 llll 不會被選成前一個（new.css 不算重讀）",
+              "code/alpha/new.css" not in (b.get("reread") or []))
+        check("這段期間寫交接單的工作階段 2 個（aaaa、llll；zzzz 在期間之前）", written == 2)
 
         text = "\n".join(hm.section("2026-01-05T00:00:00", "2026-01-12T00:00:00", root))
         check("報表一節：有表格、找不到前一個有寫明", "| bbbb | 1 | 1 | 3 | 1 | 1 | 12 萬 |" in text and "找不到前一個" in text)
