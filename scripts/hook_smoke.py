@@ -4,7 +4,8 @@
   照 settings.json 裡每一條指向技能 hooks/ 的指令原樣執行，餵一筆該事件的輸入，看有沒有預期的反應。
   --old：另外把指令裡的 skills/agile-crew 換回 skills/dev-team 再測一次（驗相容用的轉送檔）。
 路徑漏改時 hook 是無聲失效（或每個動作都被擋），單元測試測不到，所以要照設定檔原樣跑。
-不會改任何檔；對話過長提醒那一條會拿這台最大的一份工作階段紀錄來餵。
+不會改任何檔；對話過長提醒那一條會拿這台「最後一則 context 超過門檻」的工作階段紀錄來餵，
+找不到這樣的紀錄（新裝置、對話都不長、提醒被關掉）就標成跳過，不算問題。
 """
 import argparse
 import glob
@@ -20,9 +21,25 @@ CLAUDE = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.join(HOME, ".claude")
 LOCAL = os.environ.get("AGILE_CREW_LOCAL") or os.environ.get("DEV_TEAM_LOCAL") or os.path.join(CLAUDE, "agile-crew-local")
 
 
-def biggest_transcript():
+def long_transcript():
+    """最後一則 context 超過提醒門檻的紀錄檔；沒有回 ""。
+    不能只挑最大的檔：檔案大不代表最後一則 context 大（摘要過、或很多小回合），會誤判成提醒沒出現。"""
+    try:
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "hooks"))
+        import context_watch as cw
+        conf = cw.settings()
+    except Exception:
+        return ""
+    if not conf:
+        return ""   # 提醒被關掉了，沒得測
     files = glob.glob(os.path.join(CLAUDE, "projects", "*", "*.jsonl"))
-    return max(files, key=os.path.getsize) if files else ""
+    for f in sorted(files, key=os.path.getsize, reverse=True):
+        try:
+            if cw.last_context(f) >= conf[0]:
+                return f
+        except OSError:
+            continue
+    return ""
 
 
 def small_transcript():
@@ -50,7 +67,7 @@ def cases():
         "project_pointer.py": [("專案位置帶入（沒對到專案時安靜也算過）",
                                 {"hook_event_name": "UserPromptSubmit", "prompt": "hook smoke", "session_id": sid, "cwd": HOME}, None, False)],
         "context_watch.py": [("對話過長提醒", {"hook_event_name": "UserPromptSubmit", "prompt": "x", "session_id": sid,
-                                          "transcript_path": biggest_transcript()}, "工作階段", False)],
+                                          "transcript_path": long_transcript()}, "工作階段", False)],
         "read_guard.py": [("整份讀回顧紀錄要擋", {"hook_event_name": "PreToolUse", "tool_name": "Read",
                                          "tool_input": {"file_path": retro}}, "", True)],
         "guard_tool_input.py": [("擋已知錯誤指令", {"hook_event_name": "PreToolUse", "tool_name": "Bash",
@@ -98,7 +115,7 @@ def main():
     ap.add_argument("--settings", default=os.path.join(CLAUDE, "settings.json"))
     ap.add_argument("--old", action="store_true")
     a = ap.parse_args()
-    cs, bad, n = commands(a.settings), 0, 0
+    cs, bad, n, skipped = commands(a.settings), 0, 0, 0
     if not cs:
         print("settings.json 裡沒有技能的 hook 指令——還沒掛。")
         return 1
@@ -112,6 +129,10 @@ def main():
             seen.add((event, variant))
             which = "舊路徑轉送" if variant != cmd else "設定檔原樣"
             for label, payload, want, block in cases().get(name, [("（沒有內建的輸入，只看能不能執行）", {"hook_event_name": event}, None, False)]):
+                if name == "context_watch.py" and not payload.get("transcript_path"):
+                    skipped += 1
+                    print(f"--  {event:<18} {name:<20} {which}｜{label}｜跳過：這台沒有最後一則 context 超過提醒門檻的工作階段紀錄")
+                    continue
                 n += 1
                 if name == "tool_hints.py" and event != "PreToolUse":
                     want = None      # 事後、失敗時的提醒要看指令結果，這裡只確認能執行
@@ -127,7 +148,7 @@ def main():
     not_mounted = [k for k in KNOWN if k not in mounted]
     if not_mounted:
         print("沒掛（設定檔裡找不到）：" + "、".join(not_mounted))
-    print(f"\n共 {n} 項，有問題 {bad} 項")
+    print(f"\n共 {n} 項，有問題 {bad} 項" + (f"，跳過 {skipped} 項" if skipped else ""))
     return 1 if bad else 0
 
 

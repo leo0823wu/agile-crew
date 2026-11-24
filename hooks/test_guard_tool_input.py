@@ -134,17 +134,28 @@ cases = [
     ("壞掉的 JSON 放行", b"not json", 0),
 ]
 fail = 0
+# 上面的預期是照 Windows（Git Bash）寫的，一律模擬 Windows 跑：在 macOS／Linux 也能驗到這段判斷，
+# 不會因為跑的機器不同而失敗（2026-11-24 Mac 跑出 11 項失敗，都是下面這幾條 Git Bash 專屬規則）。
 for name, payload, want in cases:
-    code, err = run(payload)
+    code, err = run(payload, {"AGILE_CREW_GUARD_OS": "nt"})
     ok = code == want
     fail += not ok
     print(("PASS" if ok else "FAIL"), name, "exit", code, "(want", want, ")")
 # macOS／Linux：Git Bash 專屬的兩條（L-046 grep -P、L-033 ssh）不擋，其他照擋
-posix_cases = [
-    ("非 Windows：grep -P 不擋", sh("grep -P '\\d+' a.txt"), 0),
-    ("非 Windows：Bash ssh 不擋", sh("ssh apphost 'uptime'"), 0),
+GITBASH_ONLY = {
+    "Bash 用 Git Bash 的 ssh", "Bash timeout 後接 scp", "Bash 不帶路徑的 ssh.exe（Git Bash 會解析成自己的）",
+    "Bash 不帶路徑的 scp.exe", "Bash /usr/bin/ssh", "Bash cd 後接 ssh", "heredoc 之後真的用 Git Bash ssh 照擋",
+    "heredoc 餵給 bash 的內文照樣檢查", "heredoc 那一行本身用 Git Bash ssh 照擋", "grep -P", "grep -oP",
+}
+picked = [(n, pl) for n, pl, _ in cases if n in GITBASH_ONLY]
+if len(picked) != len(GITBASH_ONLY):
+    fail += 1
+    print("FAIL GITBASH_ONLY 名單對不到案例：", sorted(GITBASH_ONLY - {n for n, _ in picked}))
+posix_cases = [("非 Windows 不擋：" + n, pl, 0) for n, pl in picked] + [
     ("非 Windows：python -c 夾引號照擋", sh("python -I -c \"print('x')\""), 2),
 ]
+# 其餘案例在非 Windows 的結果要跟 Windows 一樣（證明只有 Git Bash 專屬規則放行，其他不會誤擋或漏擋）
+posix_cases += [("非 Windows 同 Windows：" + n, pl, w) for n, pl, w in cases if n not in GITBASH_ONLY]
 for name, payload, want in posix_cases:
     got = run(payload, {"AGILE_CREW_GUARD_OS": "posix"})[0]
     ok = got == want

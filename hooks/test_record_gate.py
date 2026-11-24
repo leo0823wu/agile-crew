@@ -18,6 +18,8 @@ TMP = tempfile.mkdtemp(prefix="rg_test_", dir=os.path.expanduser("~"))
 WORK = os.path.join(TMP, "work")
 CODE = os.path.join(TMP, "code")
 LOCAL = os.path.join(TMP, "local")
+J = lambda *a: os.path.join(CODE, *a)   # noqa: E731  程式碼路徑照這台的寫法（不寫死反斜線，macOS 也能跑）
+REC_IN = lambda site: site + os.sep + "record.md"   # noqa: E731  理由裡的紀錄相對路徑
 OLD = datetime.datetime(2020, 1, 1).timestamp()
 
 
@@ -42,14 +44,14 @@ def setup():
           "| B | 丙平台 | [紀錄](GroupB/丙平台/record.md) |\n")
     os.utime(os.path.join(WORK, "index.md"), (OLD, OLD))
     rec = {
-        "甲": record("GroupA", "甲官網", f"本機：`{CODE}\\alpha`（分支 `main`）"),
-        "乙": record("GroupA", "乙丁系統", f"本機：`{CODE}\\beta`、`{CODE}\\shared`"),
-        "丙": record("GroupB", "丙平台", f"`{CODE}\\shared`；文件 `docs-gamma`"),
+        "甲": record("GroupA", "甲官網", f"本機：`{J('alpha')}`（分支 `main`）"),
+        "乙": record("GroupA", "乙丁系統", f"本機：`{J('beta')}`、`{J('shared')}`"),
+        "丙": record("GroupB", "丙平台", f"`{J('shared')}`；文件 `docs-gamma`"),
     }
     for repo in ("alpha", "beta", "shared", "orphan"):
         os.makedirs(os.path.join(CODE, repo, ".git"), exist_ok=True)
     os.makedirs(os.path.join(CODE, "alpha-wt-fix"), exist_ok=True)
-    write(os.path.join(CODE, "alpha-wt-fix", ".git"), f"gitdir: {CODE}\\alpha\\.git\\worktrees\\alpha-wt-fix")
+    write(os.path.join(CODE, "alpha-wt-fix", ".git"), "gitdir: " + os.path.join(CODE, "alpha", ".git", "worktrees", "alpha-wt-fix"))
     write(os.path.join(LOCAL, "config.json"), json.dumps(
         {"project_index": os.path.join(WORK, "index.md"), "work_root": WORK, "code_root": CODE}))
     return rec
@@ -176,17 +178,17 @@ cases = [
                  cwd=os.path.join(CODE, "alpha")),
       edit(2, REC["乙"]), retro(3, "乙丁系統 上線"), stop(4)], "allow", None),
     ("Set-Content 的內容不是路徑（內容剛好是別的 repo 的路徑也不算改到它）",
-     [ask(0), sh(1, f'Set-Content C:/tmp/note.txt "{CODE}\\beta\\z.txt"', "PowerShell"), edit(2, REC["甲"]),
+     [ask(0), sh(1, 'Set-Content C:/tmp/note.txt "' + J("beta", "z.txt") + '"', "PowerShell"), edit(2, REC["甲"]),
       sh(3, PUSH), stop(4)], "allow", None),
     ("回顧列主專案在前、後面舉例別的專案 → 只要求主專案（理由裡不出現舉例的專案）",
      [ask(0), retro(1, "甲官網 修正（例：丙平台 也有同樣問題）"), stop(3)], "block",
-     lambda r: "甲官網\\record.md" in r and "丙平台\\record.md" not in r),
+     lambda r: REC_IN("甲官網") in r and REC_IN("丙平台") not in r),
     ("開頭那段有完整專案名 → 用完整名，不用簡稱（「乙丁 群組 丙平台 修正」→ 丙平台）",
      [ask(0), retro(1, "乙丁群組 丙平台 修正"), stop(2)], "block",
-     lambda r: "丙平台\\record.md" in r and "乙丁系統\\record.md" not in r),
+     lambda r: REC_IN("丙平台") in r and REC_IN("乙丁系統") not in r),
     ("開頭是簡稱、完整專案名只在括號裡當參考 → 用簡稱",
      [ask(0), retro(1, "乙丁 金流（參考 甲官網 的做法）"), stop(2)], "block",
-     lambda r: "乙丁系統\\record.md" in r and "甲官網\\record.md" not in r),
+     lambda r: REC_IN("乙丁系統") in r and REC_IN("甲官網") not in r),
     ("只有回顧列、紀錄在這個工作階段上一次 push 之後更新過 → 已涵蓋，放行",
      [ask(0), edit(1, A), sh(2, PUSH), stop(3), ask(60 * 20, "哪天上線"), *blocked_stop(60 * 20 + 1),
       retro(60 * 20 + 2, "甲官網 補寫")], "allow-active-touch", None),
@@ -282,6 +284,22 @@ json.dump(c, open(cfg, "w", encoding="utf-8"))
 got, _ = run([ask(0), edit(1, os.path.join(CODE, "orphan", "a.py")), sh(2, PUSH, cwd=os.path.join(CODE, "orphan")), stop(3)])
 print("PASS" if got == "allow" else "FAIL", "設定 unmapped_code=ignore：對不到紀錄的 repo 放行", got)
 fail += got != "allow"
+
+# macOS／Linux：紀錄是 Windows 寫的（程式碼欄 C:\…\alpha），用 repo 名對到這台程式碼根目錄的 alpha
+if os.name != "nt":
+    sys.path.insert(0, HERE)
+    import record_gate as RG
+    W2 = os.path.join(TMP, "work_win")
+    write(os.path.join(W2, "index.md"), "| A | 甲官網 | [紀錄](A/甲官網/record.md) |\n")
+    write(os.path.join(W2, "A", "甲官網", "record.md"),
+          "# 甲\n\n## 基本資料\n\n| 項目 | 內容 |\n|---|---|\n| 程式碼 | `C:\\EM\\SRC\\alpha`（分支 `main`） |\n")
+    pj = RG.Projects({"project_index": os.path.join(W2, "index.md"), "work_root": W2, "code_root": CODE})
+    got = pj.map(RG.norm(J("alpha", "App.java")))
+    ok = got == ("rec", frozenset([0]))
+    print("PASS" if ok else "FAIL", "非 Windows：紀錄寫 Windows 路徑，用 repo 名對到這台的 repo", got)
+    fail += not ok
+else:
+    print("SKIP 非 Windows：紀錄寫 Windows 路徑對到這台的 repo（只在 macOS／Linux 跑）")
 
 bad = subprocess.run([sys.executable, "-I", HOOK], input=b"not json", capture_output=True)
 print("PASS" if bad.returncode == 0 and not bad.stdout.strip() else "FAIL", "壞掉的輸入放行")

@@ -60,7 +60,13 @@ VALUE_FLAGS = {"-value", "-encoding", "-itemtype", "-erroraction", "-ea", "-name
 NULLS = {"/dev/null", "$null", "nul"}
 TOUCH_HINT = re.compile(r"(?i)\b(python|py|node|WriteAllText|WriteAllLines|AppendAllText|Set-Content|Add-Content|"
                         r"Out-File|sed|perl|tee|cp|copy-item|move-item)\b|>")
-ABS = re.compile(r"^([a-zA-Z]:[\\/]|~[\\/]|/[a-zA-Z]/)")
+# Windows：路徑一律正規化成小寫、反斜線（C:/x、/c/x 都認）；macOS／Linux：斜線分隔，macOS 磁碟預設不分大小寫所以也轉小寫；
+# Windows 寫法的路徑（從 Windows 同步來的紀錄）只用來認 repo 名（2026-11-24 Mac 上一律對不到紀錄、永遠不擋）
+IS_WIN = os.name == "nt"
+FOLD_CASE = IS_WIN or sys.platform == "darwin"
+SEP = "\\" if IS_WIN else "/"
+WIN_ABS = re.compile(r"^[a-zA-Z]:[\\/]")
+ABS = re.compile(r"^([a-zA-Z]:[\\/]|~[\\/]|/[a-zA-Z]/)") if IS_WIN else re.compile(r"^(/|~/)")
 
 
 # ---------------------------------------------------------------- 設定與路徑
@@ -74,10 +80,12 @@ def load_config():
 
 
 def norm(p, cwd=None):
-    """各種寫法（C:/x、/c/x、~/x、相對路徑）→ 正規化的絕對路徑（小寫、反斜線）；判斷不了回空字串。"""
+    """各種寫法（C:/x、/c/x、~/x、相對路徑）→ 正規化的絕對路徑（Windows：小寫、反斜線）；判斷不了回空字串。"""
     if not p:
         return ""
     p = p.strip().strip('"').strip("'")
+    if not IS_WIN:
+        return _norm_posix(p, cwd)
     m = re.match(r"^/([a-zA-Z])(/.*)?$", p)
     if m:
         p = m.group(1) + ":" + (m.group(2) or "/")
@@ -93,8 +101,42 @@ def norm(p, cwd=None):
     return os.path.normcase(os.path.normpath(p))
 
 
+def _norm_posix(p, cwd):
+    if p.startswith("~"):
+        p = HOME + p[1:]
+    p = p.replace("${HOME}", HOME).replace("$HOME", HOME)
+    if p.startswith(("$", "%")) or "$(" in p:
+        return ""                           # 變數、指令替換：看不出實際路徑
+    if WIN_ABS.match(p) or p.startswith("\\"):
+        return ""                           # Windows 路徑：不是這台的檔
+    if not p.startswith("/"):
+        if not cwd:
+            return ""
+        p = os.path.join(cwd, p)
+    p = os.path.normpath(p)
+    return p.lower() if FOLD_CASE else p
+
+
 def under(p, root):
-    return bool(root) and (p == root or p.startswith(root.rstrip("\\") + "\\"))
+    return bool(root) and (p == root or p.startswith(root.rstrip(SEP) + SEP))
+
+
+def tool_dirs():
+    """不算專案改檔的資料夾：~/.claude、技能的本地資料夾（AGILE_CREW_LOCAL 可能設在別處）、macOS／Linux 的暫存區。
+    Windows 的暫存區在 AppData 底下，由 not_project_path 另外排除。record_gate 與 round_time 共用。"""
+    dirs = [norm(os.path.join(HOME, ".claude")), norm(LOCAL)]
+    if not IS_WIN:
+        import tempfile
+        dirs += [norm(os.path.realpath(tempfile.gettempdir())), norm(tempfile.gettempdir()),
+                 "/tmp", "/private/tmp", "/var/folders", "/private/var/folders"]
+    return [d for d in dirs if d]
+
+
+def not_project_path(p):
+    """暫存區、~/.claude、本地資料夾底下的檔（p 要先 norm 過）；空路徑也算。"""
+    if not p or (IS_WIN and "\\appdata\\" in p):
+        return True
+    return any(under(p, d) for d in tool_dirs())
 
 
 def section(text, title):
@@ -116,7 +158,8 @@ def worktree_main(d):
             if m:
                 parts = re.split(r"[\\/]", m.group(1).strip())
                 if ".git" in parts:
-                    return parts[parts.index(".git") - 1].lower()
+                    name = parts[parts.index(".git") - 1]
+                    return name.lower() if FOLD_CASE else name
     except OSError:
         pass
     return None
@@ -150,7 +193,7 @@ class Projects:
         self.index = norm(cfg.get("project_index") or "")
         self.work = norm(cfg.get("work_root") or "") or (os.path.dirname(self.index) if self.index else "")
         self.code_roots = [norm(r) for r in [cfg.get("code_root")] + list(rg.get("extra_code_roots") or []) if r]
-        self.ignore = [norm(x) for x in rg.get("ignore") or []] + [norm(os.path.join(HOME, ".claude"))]
+        self.ignore = [norm(x) for x in rg.get("ignore") or []] + tool_dirs()
         self.records = []           # dict(path, folder, rel)
         self.record_names = set()
         self.repo_map = {}          # repo 名（小寫）→ set(紀錄編號)
@@ -227,6 +270,9 @@ class Projects:
             return
         if ABS.match(tok):
             cands = [norm(tok)]
+        elif not IS_WIN and WIN_ABS.match(tok):
+            # 從 Windows 同步來的紀錄（C:\\code\\repo）：用路徑裡的資料夾名對這台的程式碼根目錄
+            cands = [norm(os.path.join(r, c)) for r in self.code_roots for c in re.split(r"[\\/]", tok)[1:] if c]
         else:
             cands = [norm(tok, b) for b in (folder, os.path.dirname(folder), self.work, *self.code_roots)]
         for c in cands:
@@ -234,7 +280,7 @@ class Projects:
                 continue
             for root in self.code_roots:
                 if under(c, root) and c != root:
-                    name = c[len(root):].strip("\\").split("\\")[0]
+                    name = c[len(root):].strip(SEP).split(SEP)[0]
                     if is_code and os.path.isdir(os.path.join(root, name)):
                         self.repo_map.setdefault(name, set()).add(i)
                         return
@@ -251,7 +297,7 @@ class Projects:
     def map(self, p, release=False):
         """→ ("rec", frozenset(紀錄編號)) ／ ("code", repo 資料夾) ／ None（不算專案改檔）。
         release＝git push：`~/.claude` 底下的 repo（例：技能）平常改檔不算（回顧時順手改技能很常見），推送出去才算那個專案的工作。"""
-        if not p or "\\appdata\\" in p:
+        if not p or (IS_WIN and "\\appdata\\" in p):
             return None
         claude = norm(os.path.join(HOME, ".claude"))
         if any(under(p, x) for x in self.ignore if not (release and x == claude)):
@@ -259,8 +305,8 @@ class Projects:
         if release and under(p, claude):
             hits = [recs for d, recs in self.owned if under(p, d)]
             return ("rec", frozenset(hits[0])) if hits else None
-        base = p.split("\\")[-1]
-        if base == "claude.md" or "\\.git\\" in p + "\\" or p == self.index or base in self.record_names:
+        base = p.split(SEP)[-1]
+        if base.lower() == "claude.md" or SEP + ".git" + SEP in p + SEP or p == self.index or base in self.record_names:
             return None
         best = None
         for i, r in enumerate(self.records):
@@ -273,7 +319,7 @@ class Projects:
                 return ("rec", frozenset(recs))
         for root in self.code_roots:
             if under(p, root) and p != root:
-                rel = p[len(root):].strip("\\").split("\\")
+                rel = p[len(root):].strip(SEP).split(SEP)
                 comp = rel[0]
                 if comp.startswith(".") or (len(rel) == 1 and not os.path.isdir(p)):
                     return None          # 根目錄的共用檔（部署總表、CLAUDE.md…）、.metadata

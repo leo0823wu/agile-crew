@@ -148,8 +148,18 @@ cases = [
     ("SQL：查過的表再跑寫入 .sql → 安靜", "PreToolUse", "Bash", f"python -I db_local.py \"{write_sql}\"", S5, {}, None),
     ("SQL：暫存表 tmp_* 不算 → 安靜", "PreToolUse", "Bash", f"python -I db_local.py \"{tmp_sql}\"", S6, {}, None),
 ]
-fail = 0
+# 只在 Windows 成立的案例（PowerShell 反斜線路徑：macOS／Linux 的反斜線不是路徑分隔，找不到檔本來就不提醒）
+WINDOWS_ONLY = {"執行前：PowerShell $env: 路徑 → 提醒"}
+missing = WINDOWS_ONLY - {c[0] for c in cases}
+fail = 1 if missing else 0
+if missing:
+    print("FAIL WINDOWS_ONLY 名單對不到案例：", sorted(missing))
+skipped = 0
 for name, ev, tool, cmd, sess, extra, want in cases:
+    if os.name != "nt" and name in WINDOWS_ONLY:
+        skipped += 1
+        print("SKIP", name, "（只在 Windows 適用）")
+        continue
     rc, ctx = run(ev, tool, cmd, sess, **extra)
     ok = rc == 0 and ((want is None and not ctx) or (want is not None and want in ctx))
     fail += not ok
@@ -159,4 +169,6 @@ for bad_input in (b"", b"not json"):
     ok = r.returncode == 0 and not r.stdout
     fail += not ok
     print("PASS" if ok else "FAIL", "壞輸入安靜放行", bad_input)
+if skipped:
+    print(f"skipped: {skipped}（非 Windows，只在 Windows 適用的案例）")
 print("failures:", fail)

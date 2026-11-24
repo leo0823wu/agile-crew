@@ -205,7 +205,7 @@ def _kind_of(e):
         return "開發"
     if e.name in R.WRITE_TOOLS:
         p = R.norm(e.inp.get("file_path") or e.inp.get("notebook_path") or "", e.cwd)
-        if p and "\\appdata\\" not in p and not R.under(p, R.norm(os.path.join(HOME, ".claude"))):
+        if not R.not_project_path(p):      # 暫存區、~/.claude、本地資料夾（回顧紀錄）不算開發
             return "開發"
     elif e.name in R.SHELLS:
         git_ops, _, _ = R.shell_effects(e.inp.get("command") or "", e.cwd)

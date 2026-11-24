@@ -25,7 +25,7 @@ def write(path, text):
 
 
 write(os.path.join(WORK, "index.md"), "| G | 甲官網 | [紀錄](G/甲官網/record.md) |\n")
-write(REC, f"# 甲\n\n## 基本資料\n\n| 項目 | 內容 |\n|---|---|\n| 程式碼 | `{CODE}\\alpha` |\n")
+write(REC, f"# 甲\n\n## 基本資料\n\n| 項目 | 內容 |\n|---|---|\n| 程式碼 | `{os.path.join(CODE, 'alpha')}` |\n")
 os.makedirs(os.path.join(CODE, "alpha", ".git"))
 write(os.path.join(LOCAL, "config.json"), json.dumps(
     {"project_index": os.path.join(WORK, "index.md"), "work_root": WORK, "code_root": CODE}))
