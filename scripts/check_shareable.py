@@ -104,6 +104,9 @@ def main():
     note = "" if terms else "（沒有本地 private-terms.txt，只檢查通用樣式）"
     print(f"可分享檢查{note}：{len(hits)} 行有個人／公司資料" +
           ("" if not hits else "：" + "、".join(f"{k} {v}" for k, v in sorted(by_file.items()))))
+    if not hits:
+        print("注意：0 行只代表「清單上的字與通用樣式沒出現」，不代表沒有內部資訊。"
+              "第一次公開、或新增大量內容後，照 lessons-workflow L-259 請獨立審查員逐檔讀。")
     sys.exit(1 if hits or main_problems else 0)
 
 
