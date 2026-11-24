@@ -35,7 +35,7 @@ def run(event, tool, cmd, session, **extra):
     payload = {"hook_event_name": event, "tool_name": tool, "tool_input": {"command": cmd},
                "session_id": session, "cwd": tmp, **extra}
     r = subprocess.run([sys.executable, "-I", HOOK], input=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-                       capture_output=True, env=dict(os.environ, HINT_TMP=tmp, DEV_TEAM_LOCAL=tmp))
+                       capture_output=True, env=dict(os.environ, HINT_TMP=tmp, AGILE_CREW_LOCAL=tmp))
     out = r.stdout.decode("utf-8")
     return r.returncode, (json.loads(out)["hookSpecificOutput"]["additionalContext"] if out else "")
 

@@ -1,5 +1,5 @@
 ---
-name: dev-team
+name: agile-crew
 description: 把使用者提出的任何需求，當成一個專業專案開發團隊（PM／系統規劃與開發／UI-UX／QA）來處理：先理解需求與背後目的、拆解問題、盤點所有可能情況與既有規則流程、做系統規劃、專業分工平行進行、驗收通過才交付。只要使用者提出需求、功能、修改、修 bug、調版型、改流程、上線前檢查、「幫我做／幫我改／新增／調整／處理一下／這個怪怪的」這類工作，就一定要先用這個技能——即使需求看起來很小、或使用者沒提到「團隊」。純粹的問答、查狀態、閒聊、只問意見不需要動手時不用。Use for ANY feature request, change request, bug fix, UI/layout change, workflow change, or pre-release check, in any project.
 ---
 
@@ -55,7 +55,7 @@ UI/UX、QA 用 **Agent 工具開子代理**（彼此獨立的就同一則訊息�
 讀多少照級別，下面每一項都寫了「怎麼讀才不浪費」：
 
 - **踩坑表不整份讀**。再犯最多的規則已經整理在本檔最後〈必守規則〉，載入技能就有。這次會碰到的技術（部署、資料庫、Excel、Notion…），照 `references/lessons.md` 的索引找到段落代號（T1～T7、W1～W6），用 Grep 找那個段落標題的行號、只讀那一段。看到編號（L-xxx）要查細節，Grep 那個編號。中、大的需求在計畫裡寫明這次會碰到哪幾條、怎麼避開。
-- **本地資料夾 `<本地>`**（預設 `~/.claude/dev-team-local/`，見 `references/shareable.md`）：`local-rules.md` 短，中、大的需求整份讀（這個使用者／公司的慣例：紀錄放哪、部署文件、檔案放置），小的需求只在要部署、要放檔案時讀；`lessons-local.md` 不整份讀，要查某個編號的本地細節、或碰到公司的系統與主機時 Grep。本地規則跟技能衝突時，以本地規則為準。
+- **本地資料夾 `<本地>`**（預設 `~/.claude/agile-crew-local/`，見 `references/shareable.md`）：`local-rules.md` 短，中、大的需求整份讀（這個使用者／公司的慣例：紀錄放哪、部署文件、檔案放置），小的需求只在要部署、要放檔案時讀；`lessons-local.md` 不整份讀，要查某個編號的本地細節、或碰到公司的系統與主機時 Grep。本地規則跟技能衝突時，以本地規則為準。
 - **回顧紀錄、改版紀錄不讀檔**：開工 hook（`session_brief.py`）已經把還沒做完的 ⏳ 帶進對話，跟這次有關的先套用。沒裝 hook 的環境跑 `python -X utf8 -I scripts/retro_tail.py`（只印最近 5 列的摘要）。
 - **專案紀錄只讀現況**：用 `python -X utf8 -I scripts/find_project.py <專案名／repo 名／網址關鍵字>` 找到紀錄與程式的位置（不用讀整份專案總表），讀那一份專案紀錄（**有〈交接單〉先讀它**，再讀目前狀況、待辦）。同資料夾的歷史檔（`find_project.py` 會印出位置）是舊的進度與已解決的問題，要查舊事才 Grep。沒有紀錄的新專案照本地規則建一份；本地規則沒寫就先看專案的 README／`CLAUDE.md`，要建紀錄時先問使用者放哪（給選項＋推薦）。
 - 專案有〈檢討〉文件的（中、大的需求）：只讀改進清單裡標 ⏳ 的。

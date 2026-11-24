@@ -89,7 +89,7 @@ cases = [
     ("PowerShell 手寫 ssh nohup & 也擋", sh("ssh.exe host 'nohup bash x.sh > x.log 2>&1 &'", "PowerShell"), 2),
     ("ssh nohup 但只有 2>&1 和 && 不算背景", sh("/c/Windows/System32/OpenSSH/ssh.exe host 'nohup bash x.sh > x.log 2>&1 && echo ok'"), 0),
     ("ssh cat nohup.out 不算", sh("/c/Windows/System32/OpenSSH/ssh.exe host 'cat nohup.out & wait'"), 0),
-    ("remote_run.py 本身不擋", sh("python -X utf8 -I -u ~/.claude/skills/dev-team/scripts/remote_run.py apphost /srv/app x.log DONE \"bash x.sh\" x.sh"), 0),
+    ("remote_run.py 本身不擋", sh("python -X utf8 -I -u ~/.claude/skills/agile-crew/scripts/remote_run.py apphost /srv/app x.log DONE \"bash x.sh\" x.sh"), 0),
     ("沒有 ssh 的本機 nohup & 不擋", sh("nohup python -I server.py > s.log 2>&1 &"), 0),
     # L-052／L-064 BOM
     ("Set-Content -Encoding UTF8", sh("Set-Content -Path a.java -Value $s -Encoding UTF8", "PowerShell"), 2),
@@ -146,7 +146,7 @@ posix_cases = [
     ("非 Windows：python -c 夾引號照擋", sh("python -I -c \"print('x')\""), 2),
 ]
 for name, payload, want in posix_cases:
-    got = run(payload, {"DEV_TEAM_GUARD_OS": "posix"})[0]
+    got = run(payload, {"AGILE_CREW_GUARD_OS": "posix"})[0]
     ok = got == want
     fail += not ok
     print("PASS" if ok else "FAIL", name, got)
@@ -170,13 +170,13 @@ pw_cases = [
 # L-122 mvnw.cmd 沒加 .\（只在 Windows 擋）
 def wfile(content, path):
     return {"tool_name": "Write", "tool_input": {"file_path": path, "content": content}}
-WIN = {"DEV_TEAM_GUARD_OS": "nt"}
-POSIX = {"DEV_TEAM_GUARD_OS": "posix"}
+WIN = {"AGILE_CREW_GUARD_OS": "nt"}
+POSIX = {"AGILE_CREW_GUARD_OS": "posix"}
 import tempfile
 _cfg = os.path.join(tempfile.mkdtemp(), "config")
 with open(_cfg, "w", encoding="utf-8") as _f:
     _f.write("Host known\n    HostName 198.51.100.5\n    Port 2201\n\nHost 198.51.100.9\n    Port 22\n")
-CFG = dict(WIN, DEV_TEAM_SSH_CONFIG=_cfg)
+CFG = dict(WIN, AGILE_CREW_SSH_CONFIG=_cfg)
 pw_cases += [
     # L-014 再犯：ssh 讀本機檔當 stdin（11/19 事故原型）
     ("ssh-stdin：bash -s < 腳本", sh("/c/Windows/System32/OpenSSH/ssh.exe -o BatchMode=yes host 'bash -s' < \"$S/x.sh\" > out.txt"), WIN, 2),
@@ -195,7 +195,7 @@ pw_cases += [
     ("new-host：用別名不擋", sh("/c/Windows/System32/OpenSSH/ssh.exe known hostname"), CFG, 0),
     ("new-host：遠端字串裡的 帳號@IP 不擋", sh("/c/Windows/System32/OpenSSH/ssh.exe known 'grep u\x40203.0.113.7 /var/log/x'"), CFG, 0),
     ("new-host：沒有 ssh 的指令不擋", sh("git log --author=u\x40203.0.113.7"), CFG, 0),
-    ("new-host：config 讀不到放行", sh("ssh -p 2105 u\x40203.0.113.7 hostname", "PowerShell"), dict(WIN, DEV_TEAM_SSH_CONFIG=_cfg + ".none"), 0),
+    ("new-host：config 讀不到放行", sh("ssh -p 2105 u\x40203.0.113.7 hostname", "PowerShell"), dict(WIN, AGILE_CREW_SSH_CONFIG=_cfg + ".none"), 0),
     ("msys-path：docker run -e APP_BASE_PATH=/app（11/12 事故原型）", sh('docker run -d --name t -p 1:2 -e APP_BASE_PATH=/app -e X="$U" img:v1'), WIN, 2),
     ("msys-path：--build-arg BASE=/app", sh("docker build --build-arg BASE=/app -t a ."), WIN, 2),
     ("msys-path：加 MSYS_NO_PATHCONV 不擋", sh("MSYS_NO_PATHCONV=1 docker run -e APP_BASE_PATH=/app img"), WIN, 0),

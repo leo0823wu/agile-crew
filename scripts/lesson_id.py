@@ -20,7 +20,7 @@ import time
 sys.stdout.reconfigure(encoding="utf-8")
 SKILL = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REF = os.path.join(SKILL, "references")
-LOCAL = os.environ.get("DEV_TEAM_LOCAL") or os.path.join(os.path.expanduser("~"), ".claude", "dev-team-local")
+LOCAL = os.environ.get("AGILE_CREW_LOCAL") or os.environ.get("DEV_TEAM_LOCAL") or os.path.join(os.path.expanduser("~"), ".claude", "agile-crew-local")
 FILES = [os.path.join(REF, n) for n in ("lessons-workflow.md", "lessons-tech.md")] + [os.path.join(LOCAL, "lessons-local.md")]
 LOCK = os.path.join(LOCAL, ".lesson_id.lock")
 LOG = os.path.join(LOCAL, "lesson-ids.log")

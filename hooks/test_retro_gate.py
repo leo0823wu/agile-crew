@@ -21,8 +21,8 @@ def edit(path):
     return tu("Edit", {"file_path": path, "old_string": "a", "new_string": "b"})
 
 
-RETRO = r"C:\Users\<name>\.claude\dev-team-local\retro-log.md"
-OLD_RETRO = r"C:\Users\<name>\.claude\skills\dev-team\references\retro.md"
+RETRO = r"C:\Users\<name>\.claude\agile-crew-local\retro-log.md"
+OLD_RETRO = r"C:\Users\<name>\.claude\skills\agile-crew\references\retro.md"
 
 
 def run(events, active=False):

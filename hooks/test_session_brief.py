@@ -1,4 +1,4 @@
-"""session_brief.py 的情境測試：用臨時的假本地資料夾（DEV_TEAM_LOCAL）跑，不碰真的資料。"""
+"""session_brief.py 的情境測試：用臨時的假本地資料夾（AGILE_CREW_LOCAL）跑，不碰真的資料。"""
 import json
 import os
 import subprocess
@@ -50,7 +50,7 @@ write(os.path.join(LOCAL, "lessons-local.md"),
 
 
 def brief(cwd, local=LOCAL):
-    env = dict(os.environ, DEV_TEAM_LOCAL=local)
+    env = dict(os.environ, AGILE_CREW_LOCAL=local)
     t = time.time()
     r = subprocess.run([sys.executable, "-I", HOOK], input=json.dumps({"cwd": cwd}).encode("utf-8"),
                        capture_output=True, env=env)
@@ -91,7 +91,7 @@ print("PASS" if ok else "FAIL", "沒有本地資料夾時提示建立 |", msg)
 
 for bad in (b"", b"not json", b"{}"):
     r = subprocess.run([sys.executable, "-I", HOOK], input=bad, capture_output=True,
-                       env=dict(os.environ, DEV_TEAM_LOCAL=LOCAL))
+                       env=dict(os.environ, AGILE_CREW_LOCAL=LOCAL))
     ok = r.returncode == 0
     fail += not ok
     print("PASS" if ok else "FAIL", "壞輸入放行", bad)

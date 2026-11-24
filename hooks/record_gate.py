@@ -29,8 +29,8 @@
 設定（`<本地>/config.json`，都可省略）：
   "record_gate": {"enabled": true, "triggers": ["retro", "push"], "idle_split_hours": 8, "unmapped_code": "block",
                   "extra_code_roots": [], "ignore": ["路徑前綴", …], "basic_section": "基本資料"}
-測試：python -I ~/.claude/skills/dev-team/hooks/test_record_gate.py
-回放：python -I ~/.claude/skills/dev-team/hooks/replay_record_gate.py 30
+測試：python -I ~/.claude/skills/agile-crew/hooks/test_record_gate.py
+回放：python -I ~/.claude/skills/agile-crew/hooks/replay_record_gate.py 30
 """
 import datetime
 import json
@@ -42,7 +42,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import transcript as T  # noqa: E402
 
 HOME = os.path.expanduser("~")
-LOCAL = os.environ.get("DEV_TEAM_LOCAL") or os.path.join(HOME, ".claude", "dev-team-local")
+LOCAL = os.environ.get("AGILE_CREW_LOCAL") or os.environ.get("DEV_TEAM_LOCAL") or os.path.join(HOME, ".claude", "agile-crew-local")
 RETRO = re.compile(r"retro-log\.md", re.IGNORECASE)
 WRITE_TOOLS = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 SHELLS = ("Bash", "PowerShell")
@@ -607,7 +607,7 @@ MARK = "專案紀錄還沒更新"     # 理由裡固定有這幾個字：續跑�
 
 
 def reason(proj, need, miss_code):
-    lines = [f"這一輪在專案上做了事、也交付了（push 或寫了回顧），但{MARK}（全域說明〈專案紀錄〉、dev-team 第 7 步）。結束前請更新："]
+    lines = [f"這一輪在專案上做了事、也交付了（push 或寫了回顧），但{MARK}（全域說明〈專案紀錄〉、agile-crew 第 7 步）。結束前請更新："]
     for group, why in need.items():
         files = list(dict.fromkeys(why))
         more = f" 等 {len(files)} 項" if len(files) > 4 else ""

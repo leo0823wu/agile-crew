@@ -8,7 +8,7 @@
 - 已經被這個 hook 擋過一次（stop_hook_active）就放行，避免卡死；腳本自己出錯也一律放行。
 
 真的不需要回顧時（例：只推了一個錯字修正），在 retro-log.md 加一列「這次沒有要改的，因為…」即可。
-測試：python -I ~/.claude/skills/dev-team/hooks/test_retro_gate.py
+測試：python -I ~/.claude/skills/agile-crew/hooks/test_retro_gate.py
 """
 import json
 import re
@@ -18,8 +18,8 @@ PUSH = re.compile(r"(?:^|[\s;&|(])git(?:\.exe)?\s+(?:-C\s+\S+\s+|--no-optional-l
 RETRO = re.compile(r"retro-log\.md", re.IGNORECASE)
 
 REASON = (
-    "這個工作階段在最後一次 git push 之後還沒做團隊回顧（dev-team 第 8 步）。結束前請照 "
-    "~/.claude/skills/dev-team/references/retro.md 做：先對上一輪 ⏳ 行動項與待驗證的技能改版、查有沒有違反既有 lessons（再犯欄 +1）、"
+    "這個工作階段在最後一次 git push 之後還沒做團隊回顧（agile-crew 第 8 步）。結束前請照 "
+    "~/.claude/skills/agile-crew/references/retro.md 做：先對上一輪 ⏳ 行動項與待驗證的技能改版、查有沒有違反既有 lessons（再犯欄 +1）、"
     "量指標、回答四題，把每個發現直接改成技能（通用的寫進技能、個人／公司的寫進本地，見 shareable.md），"
     "最後用 Edit 在本地資料夾的 retro-log.md〈回顧紀錄〉加一列。"
     "如果這次真的沒有要改的，也加一列寫明「這次沒有要改的，因為…」。"

@@ -7,7 +7,7 @@
 而且兩支同時擋時，兩個理由是否都會送到 Claude 沒有把握，合成一個理由最保險。
 兩支也都還能單獨執行（各自的測試照舊）。續跑（stop_hook_active）時回顧檢查放行；紀錄檢查只在這一段還沒被它擋過時才判斷
 （被回顧檢查逼出來補寫的回顧，寫了哪個專案、紀錄沒更新，也要擋得到），所以不會卡死。任何錯誤一律放行。
-測試：python -I ~/.claude/skills/dev-team/hooks/test_stop_gate.py
+測試：python -I ~/.claude/skills/agile-crew/hooks/test_stop_gate.py
 """
 import json
 import os

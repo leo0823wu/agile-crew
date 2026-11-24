@@ -1,6 +1,6 @@
 """round_time.py（每輪耗時）與 team_metrics.py（重工解析、每週趨勢）的測試。
 
-python -I ~/.claude/skills/dev-team/scripts/test_round_time.py
+python -I ~/.claude/skills/agile-crew/scripts/test_round_time.py
 """
 import datetime
 import json
@@ -15,8 +15,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 TMP = tempfile.mkdtemp(prefix="rt_test_")
 LOCAL = os.path.join(TMP, "local")
 PROJ = os.path.join(TMP, "projects")
-os.environ["DEV_TEAM_LOCAL"] = LOCAL
-os.environ["DEV_TEAM_TRANSCRIPTS"] = PROJ
+os.environ["AGILE_CREW_LOCAL"] = LOCAL
+os.environ["AGILE_CREW_TRANSCRIPTS"] = PROJ
 sys.path.insert(0, HERE)
 import round_time as RT  # noqa: E402
 import team_metrics as TM  # noqa: E402

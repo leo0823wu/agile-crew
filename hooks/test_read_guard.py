@@ -21,7 +21,7 @@ def main():
             fails.append(name)
 
     with tempfile.TemporaryDirectory() as tmp:
-        d = os.path.join(tmp, "dev-team-local")
+        d = os.path.join(tmp, "agile-crew-local")
         os.makedirs(d)
         other = os.path.join(tmp, "elsewhere")
         os.makedirs(other)

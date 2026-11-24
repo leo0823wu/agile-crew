@@ -29,7 +29,7 @@ def build(prompt, session_id, cfg=None, state_dir=None):
     hits = projlib.match(prompt, plist)
     if not hits:
         return ""
-    state_dir = state_dir or os.path.join(tempfile.gettempdir(), "dev-team-pointer")
+    state_dir = state_dir or os.path.join(tempfile.gettempdir(), "agile-crew-pointer")
     os.makedirs(state_dir, exist_ok=True)
     state = os.path.join(state_dir, "".join(ch for ch in (session_id or "nosession") if ch.isalnum() or ch in "-_")[:80] + ".txt")
     done = set(open(state, encoding="utf-8").read().split("\n")) if os.path.exists(state) else set()

@@ -8,7 +8,7 @@
 5. 技能裡有沒有個人／公司資料（scripts/check_shareable.py）
 6. 對到的專案紀錄有〈交接單〉就整段帶入（上一個工作階段留給接手的人；格式見 references/handoff.md），放在最前面
 
-`<本地>`：環境變數 DEV_TEAM_LOCAL，沒設就是 ~/.claude/dev-team-local。
+`<本地>`：環境變數 AGILE_CREW_LOCAL，沒設就是 ~/.claude/agile-crew-local。
 只讀不寫；任何錯誤都安靜放行（exit 0），不能擋住開工。
 """
 import json
@@ -19,7 +19,7 @@ import sys
 
 SKILL = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REF = os.path.join(SKILL, "references")
-LOCAL = os.environ.get("DEV_TEAM_LOCAL") or os.path.join(os.path.expanduser("~"), ".claude", "dev-team-local")
+LOCAL = os.environ.get("AGILE_CREW_LOCAL") or os.environ.get("DEV_TEAM_LOCAL") or os.path.join(os.path.expanduser("~"), ".claude", "agile-crew-local")
 
 RETRO_ROWS = 8      # 看最近幾列回顧
 MAX_ITEMS = 8       # 每一類最多列幾項
@@ -218,7 +218,7 @@ def main():
         data = {}
     cwd = data.get("cwd") or os.getcwd()
 
-    parts = ["## 開工提醒（dev-team SessionStart hook 自動帶入：上次留下、還沒做完的經驗）",
+    parts = ["## 開工提醒（agile-crew SessionStart hook 自動帶入：上次留下、還沒做完的經驗）",
              f"跟這次工作有關的先處理或先跟使用者講；無關的不用提。本地資料夾：{LOCAL}"]
     if not os.path.isdir(LOCAL):
         parts.append("### 還沒有本地資料夾：照 references/shareable.md「第一次用」建立（至少 local-rules.md、private-terms.txt）")
@@ -287,7 +287,7 @@ def main():
             parts.append("### 跨裝置同步卡住：" + stale + "。先跑設定裡的同步指令看原因、修好再開工，不要等收尾")
     except Exception:
         pass
-    parts.append("新增 lessons 列要編號：`python -I ~/.claude/skills/dev-team/scripts/lesson_id.py next`（加鎖取號）。"
+    parts.append("新增 lessons 列要編號：`python -I ~/.claude/skills/agile-crew/scripts/lesson_id.py next`（加鎖取號）。"
                  "通用的寫進技能、個人／公司的寫進本地（references/shareable.md）。")
 
     if handoffs:

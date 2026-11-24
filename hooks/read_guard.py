@@ -43,7 +43,8 @@ def span_chars(path, offset, limit):
 def problem(tool_input, max_chars=MAX_CHARS):
     path = str(tool_input.get("file_path") or "")
     name = os.path.basename(path.replace("\\", "/")).lower()
-    if name not in FILES or "dev-team" not in path.replace("\\", "/").lower():
+    low = path.replace("\\", "/").lower()
+    if name not in FILES or not ("agile-crew" in low or "dev-team" in low):   # 舊名：相容用的連結
         return ""
     if not os.path.isfile(path):
         return ""

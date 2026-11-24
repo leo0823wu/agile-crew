@@ -2,7 +2,7 @@
 
 只讀不改：算出這段期間的回顧指標、行動項關閉率、技能改版成效、lessons 新增與再犯、重號，
 並列出「可能重複」「可能過時」「再犯 >= 2 還不是機制」的候選，交給技能優化判斷要不要動。
-回顧紀錄、改版紀錄、本地 lessons 從本地資料夾讀（DEV_TEAM_LOCAL，預設 ~/.claude/dev-team-local）。
+回顧紀錄、改版紀錄、本地 lessons 從本地資料夾讀（AGILE_CREW_LOCAL，預設 ~/.claude/agile-crew-local）。
 
 用法：
   python -I team_metrics.py [--days 7] [--snapshot 路徑] [--save-snapshot]
@@ -24,7 +24,7 @@ import round_time as RT  # noqa: E402  耗時欄的格式（回填：round_time.
 
 SKILL = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REF = os.path.join(SKILL, "references")
-LOCAL = os.environ.get("DEV_TEAM_LOCAL") or os.path.join(os.path.expanduser("~"), ".claude", "dev-team-local")
+LOCAL = os.environ.get("AGILE_CREW_LOCAL") or os.environ.get("DEV_TEAM_LOCAL") or os.path.join(os.path.expanduser("~"), ".claude", "agile-crew-local")
 LESSON_FILES = (os.path.join(REF, "lessons-workflow.md"), os.path.join(REF, "lessons-tech.md"),
                 os.path.join(LOCAL, "lessons-local.md"))
 

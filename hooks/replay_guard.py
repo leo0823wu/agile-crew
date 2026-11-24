@@ -1,7 +1,7 @@
 """回放：把過去 session 實際下過的 Bash／PowerShell 指令丟給 guard_tool_input.py 的 check_command（同一個程序內，不開子程序），
 看新規則會擋下多少、擋到什麼，用來找誤擋。改規則前後都跑一次。
 只印擋下原因與指令前 90 字（`=` 後面的值遮掉）。
-用法：python -I ~/.claude/skills/dev-team/hooks/replay_guard.py <最近幾個 session，例 30>
+用法：python -I ~/.claude/skills/agile-crew/hooks/replay_guard.py <最近幾個 session，例 30>
 （2026-10-29 第一次回放：ssh 規則在 Git Bash 誤擋 900 多次，改成只擋 PowerShell；BOM 規則改成只擋寫原始碼／SQL／設定檔）"""
 import glob
 import importlib.util

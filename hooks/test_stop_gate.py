@@ -1,6 +1,6 @@
 """stop_gate.py（回顧＋專案紀錄合成一個 Stop 入口）的情境測試。
 
-python -I ~/.claude/skills/dev-team/hooks/test_stop_gate.py
+python -I ~/.claude/skills/agile-crew/hooks/test_stop_gate.py
 """
 import datetime
 import json
@@ -80,7 +80,7 @@ def run(events, active=False):
     os.utime(REC, (OLD, OLD))
     r = subprocess.run([sys.executable, "-I", HOOK], capture_output=True,
                        input=json.dumps({"transcript_path": p, "stop_hook_active": active}).encode(),
-                       env=dict(os.environ, DEV_TEAM_LOCAL=LOCAL, RECORD_GATE_DEBUG="1"))
+                       env=dict(os.environ, AGILE_CREW_LOCAL=LOCAL, RECORD_GATE_DEBUG="1"))
     if r.stderr.strip():
         print("   stderr:", r.stderr.decode("utf-8", "replace")[-500:])
     out = r.stdout.decode("utf-8", "replace").strip()

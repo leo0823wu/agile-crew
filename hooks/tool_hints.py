@@ -57,7 +57,7 @@ RESTART_156 = ("L-161：這次要在遠端機器重啟／重建容器。先跑 `
                "已經檢查過就忽略。")
 READERS_159 = ("L-159：這支 SQL 會寫入 {tables}。寫之前要知道還有誰在讀這些表（同網站的別頁、別的系統、排程）——"
                "兩次都是使用者提醒或做完才發現（共用設定表被別的系統讀；另一頁也顯示同一份資料、而且讀法早就錯了）。"
-               "跑 `python -X utf8 -I ~/.claude/skills/dev-team/scripts/find_table_readers.py <工作區根目錄> {tables}`，"
+               "跑 `python -X utf8 -I ~/.claude/skills/agile-crew/scripts/find_table_readers.py <工作區根目錄> {tables}`，"
                "把每個讀取處放進計畫逐一判斷這次會不會影響它。這個工作階段已經查過就忽略。")
 SQL_FILE = re.compile(r"((?:[A-Za-z]:)?[^\s\"'<>|;&]+\.sql)\b", re.I)
 # 真的在執行 SQL 檔(cat／Read 看內容不算):mysql、psql 這類用戶端,或專案自己的執行腳本(名稱含 db_local、run_sql、db_sql)
@@ -305,7 +305,7 @@ def script_needs_utf8(cmd, cwd):
 def login_hint(url):
     """要開的網址在本地 login-hints.json 裡（例：要使用者登入的跳板），回傳事先要做的提醒。
     檔案格式：[{"match": "網址片段", "hint": "登入前要做的事"}]；公司網址只放本地，不放技能。"""
-    local = os.environ.get("DEV_TEAM_LOCAL") or os.path.join(os.path.expanduser("~"), ".claude", "dev-team-local")
+    local = os.environ.get("AGILE_CREW_LOCAL") or os.environ.get("DEV_TEAM_LOCAL") or os.path.join(os.path.expanduser("~"), ".claude", "agile-crew-local")
     try:
         with open(os.path.join(local, "login-hints.json"), encoding="utf-8") as f:
             rules = json.load(f)

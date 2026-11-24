@@ -1,7 +1,7 @@
 """檢查技能資料夾能不能直接分享：不能有個人、公司、專案資料。
 
 技能（本資料夾）只放通用的流程面、技術面內容；個人／公司／專案的內容放本地資料夾
-（預設 ~/.claude/dev-team-local/，可用環境變數 DEV_TEAM_LOCAL 改）。
+（預設 ~/.claude/agile-crew-local/，可用環境變數 AGILE_CREW_LOCAL 改）。
 
 掃兩種東西：
 1. 本地 `private-terms.txt` 列的字（公司名、專案名、人名、主機、內部路徑）——每個使用者自己維護
@@ -17,7 +17,7 @@ import sys
 
 sys.stdout.reconfigure(encoding="utf-8")
 SKILL = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LOCAL = os.environ.get("DEV_TEAM_LOCAL") or os.path.join(os.path.expanduser("~"), ".claude", "dev-team-local")
+LOCAL = os.environ.get("AGILE_CREW_LOCAL") or os.environ.get("DEV_TEAM_LOCAL") or os.path.join(os.path.expanduser("~"), ".claude", "agile-crew-local")
 SKIP_DIRS = {"_backup", "__pycache__", ".git"}
 TEXT_EXT = {".md", ".py", ".txt", ".json", ".sh", ".ps1", ".mjs", ".js", ".ts", ".yml", ".yaml", ".log", ".csv"}
 

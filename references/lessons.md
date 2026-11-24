@@ -11,14 +11,14 @@
 ## 編號與再犯次數
 
 - 每列有固定編號 `L-001`～，搬段落、搬檔、搬到本地都不改編號；引用時寫編號（例：「見 L-042」），不要寫「第幾列」。技能與本地共用同一組編號。
-- **新增一列一律先取號**：`python -I ~/.claude/skills/dev-team/scripts/lesson_id.py next --note "一句話"`，印出的編號就是你的（加鎖取號，好幾個工作階段同時寫也不會撞號；取號紀錄在 `<本地>/lesson-ids.log`）。檢查重號：`lesson_id.py check`。由來：手動「讀計數→用→加一」撞號三次。
+- **新增一列一律先取號**：`python -I ~/.claude/skills/agile-crew/scripts/lesson_id.py next --note "一句話"`，印出的編號就是你的（加鎖取號，好幾個工作階段同時寫也不會撞號；取號紀錄在 `<本地>/lesson-ids.log`）。檢查重號：`lesson_id.py check`。由來：手動「讀計數→用→加一」撞號三次。
 - 「再犯」欄＝規則寫下之後又發生的次數。回顧（`retro.md` 第 0 步）發現又犯了，就在原列 +1，並在「以後的做法」補一句「又一次（日期）」。
 - **再犯 ≥ 2 的列必須是機制**（測試、腳本、hook），不能只是文字；回顧時檢查，還不是機制的列成行動項。
 - 已經做成 hook 的（`hooks/`，安裝見 `README.md`）：
   - **擋**（`guard_tool_input.py`）：L-033 Bash 用 Git Bash 的 ssh／scp、L-032 Edit 結尾空白、L-042 指令裡直接寫 Python、L-014 PowerShell 下 ssh 時遠端字串夾雙引號或管線、或 pipe 給 ssh、L-052／L-064 PowerShell 寫原始碼／SQL／設定檔加 BOM（含同一行寫訊息檔再 `git commit -F`）、L-046 `grep -P`、印出 `.env`／環境變數值、L-047 Playwright 沒指定 channel、L-122 `mvnw.cmd` 沒加 `.\`。
   - **腳本**（`scripts/`）：L-065 回答「現在／換版後會怎樣」「系統有沒有某功能」前用 `grep_branches.py` 看每個分支各長怎樣（`--since <需求日期>` 列出之後動到關鍵字的 commit，命中的註解行會標出來）；L-019 說「兩份檔一樣／原樣另存」前用 `diff_sheets.py` 逐格比；L-062 說「本來就有／重啟前就有」前用 `log_daily_count.py` 看舊 log 逐日次數；L-161 重啟／重建容器前在主機跑 `restart_precheck.sh`（主機服務、沒有 docker 用 `host_restart_precheck.sh`，含主機 DNS 檢查）；L-165 懷疑資料庫寫進亂碼時用 `db_mojibake_pg.sh`／`db_mojibake_mysql.sh`（只讀，內建對照組）；L-184 找惡意 jsp 用 `jsp_backdoor_scan.sh`（看內容特徵、不看位置）；L-137 逐檔換 class 上線前用 `class_diff.py`（可直接吃正式 jar／war：`"app.jar!BOOT-INF/classes/<套件>"`）；L-033 VPN 不穩時傳大檔用 `put_file_resume.py`、在主機上跑換版用 `remote_run.py`。
   - **提醒**（`tool_hints.py`）：L-036 Python 會印非 ASCII 卻沒設定 UTF-8 輸出（執行前）、出現 UnicodeEncodeError（執行後）；L-055 Bash 逾時後提醒改用 PowerShell／Read／Grep，同一工作階段 30 分鐘內再用 Bash 跑簡單指令會再提醒；L-161 經 ssh 重啟／重建容器（含上傳的 .sh）卻沒跑 `scripts/restart_precheck.sh` 時提醒；L-234 執行「改壞檔案＋跑測試＋還原」的對照組腳本前提醒四點（回放 300 個工作階段：去重後提醒 13 次，6 次是真的對照組，7 次是同樣會改檔＋跑測試的演練腳本，提醒寫「看起來是」）。
-  - 規則測試：`python -I ~/.claude/skills/dev-team/hooks/test_guard_tool_input.py`、`test_tool_hints.py`；回放：`hooks/replay_guard.py 30`。改規則前先用過去工作階段的實際指令回放，看會不會大量誤擋（曾經一條 ssh 規則在 Git Bash 誤擋 900 多次，改成只擋 PowerShell）。**回放的每一筆擋下都要打開原始紀錄判斷合不合理**，只看總數會漏（2026-11-05 收尾紀錄檢查：總數對得上，12 筆裡卻有 6 筆實際不會發生，見 L-154）。
+  - 規則測試：`python -I ~/.claude/skills/agile-crew/hooks/test_guard_tool_input.py`、`test_tool_hints.py`；回放：`hooks/replay_guard.py 30`。改規則前先用過去工作階段的實際指令回放，看會不會大量誤擋（曾經一條 ssh 規則在 Git Bash 誤擋 900 多次，改成只擋 PowerShell）。**回放的每一筆擋下都要打開原始紀錄判斷合不合理**，只看總數會漏（2026-11-05 收尾紀錄檢查：總數對得上，12 筆裡卻有 6 筆實際不會發生，見 L-154）。
 - 經驗延續的其他機制：**開工**——SessionStart hook `session_brief.py` 帶入回顧沒做完的行動項、待驗證的技能改版、再犯 ≥ 2 還不是機制的列、這個工作目錄對到的專案 ⏳ 待辦；**收尾**——Stop hook `stop_gate.py`：`retro_gate.py`（push 後沒寫回顧就擋）＋`record_gate.py`（L-034：push 或寫回顧的那一輪，改過的專案或回顧寫的專案對到的專案紀錄沒更新就擋；測試 `test_record_gate.py`、回放 `replay_record_gate.py`）；**耗時**——`scripts/round_time.py --fill` 從工作階段紀錄算每輪耗時填進回顧紀錄，`team_metrics.py --trend` 看每週趨勢；**改技能要驗證成效**——記在 `<本地>/skill-changelog.md`；**定期**——`scripts/team_metrics.py` 算指標與成效，找跨回顧的模式直接改技能（見 `retro.md`〈定期技能優化〉）。
 
 ## 規則（兩份都適用）

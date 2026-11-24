@@ -39,8 +39,8 @@ import transcript as T  # noqa: E402
 
 sys.stdout.reconfigure(encoding="utf-8")
 HOME = os.path.expanduser("~")
-LOCAL = os.environ.get("DEV_TEAM_LOCAL") or os.path.join(HOME, ".claude", "dev-team-local")
-PROJECTS = os.environ.get("DEV_TEAM_TRANSCRIPTS") or os.path.join(HOME, ".claude", "projects")   # 測試時換成假資料夾
+LOCAL = os.environ.get("AGILE_CREW_LOCAL") or os.environ.get("DEV_TEAM_LOCAL") or os.path.join(HOME, ".claude", "agile-crew-local")
+PROJECTS = os.environ.get("AGILE_CREW_TRANSCRIPTS") or os.path.join(HOME, ".claude", "projects")   # 測試時換成假資料夾
 LONG_TOOL = datetime.timedelta(minutes=3)
 RESET_GAP = datetime.timedelta(hours=8)
 COL = "耗時"

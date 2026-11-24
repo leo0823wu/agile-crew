@@ -1,6 +1,6 @@
 """record_gate.py 的情境測試：在暫存資料夾建假的專案總表、紀錄、repo 與對話紀錄（jsonl），跑 hook 看該擋／不該擋。
 
-python -I ~/.claude/skills/dev-team/hooks/test_record_gate.py
+python -I ~/.claude/skills/agile-crew/hooks/test_record_gate.py
 """
 import datetime
 import json
@@ -130,7 +130,7 @@ def run(events, active=False, side=None, touch_now=None, touch_at=None):
         os.utime(touch_now, None)
     if touch_at:                      # (路徑, 時間)：紀錄在某個時間點被改過
         os.utime(touch_at[0], (touch_at[1].timestamp(), touch_at[1].timestamp()))
-    env = dict(os.environ, DEV_TEAM_LOCAL=LOCAL, RECORD_GATE_DEBUG="1")
+    env = dict(os.environ, AGILE_CREW_LOCAL=LOCAL, RECORD_GATE_DEBUG="1")
     payload = json.dumps({"transcript_path": sess, "stop_hook_active": active}).encode("utf-8")
     r = subprocess.run([sys.executable, "-I", HOOK], input=payload, capture_output=True, env=env)
     if r.stderr.strip():
@@ -287,7 +287,7 @@ bad = subprocess.run([sys.executable, "-I", HOOK], input=b"not json", capture_ou
 print("PASS" if bad.returncode == 0 and not bad.stdout.strip() else "FAIL", "壞掉的輸入放行")
 fail += not (bad.returncode == 0 and not bad.stdout.strip())
 missing = subprocess.run([sys.executable, "-I", HOOK], input=json.dumps({"transcript_path": "C:/nope.jsonl"}).encode(),
-                         capture_output=True, env=dict(os.environ, DEV_TEAM_LOCAL=LOCAL))
+                         capture_output=True, env=dict(os.environ, AGILE_CREW_LOCAL=LOCAL))
 print("PASS" if missing.returncode == 0 and not missing.stdout.strip() else "FAIL", "找不到紀錄檔放行")
 fail += not (missing.returncode == 0 and not missing.stdout.strip())
 

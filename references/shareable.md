@@ -9,7 +9,7 @@
 
 ## 本地資料夾在哪（`<本地>`）
 
-預設 `~/.claude/dev-team-local/`；要放別處就設環境變數 `DEV_TEAM_LOCAL`。所有腳本與 hook 都用同一個規則找它。
+預設 `~/.claude/agile-crew-local/`；要放別處就設環境變數 `AGILE_CREW_LOCAL`。所有腳本與 hook 都用同一個規則找它。
 本地資料夾**不在技能資料夾裡**，所以分享、推送技能時不會被帶出去。
 
 | 檔案 | 內容 | 誰會讀 |
@@ -24,7 +24,7 @@
 | `lesson-ids.log`、`.lesson_id.lock` | 取號紀錄與鎖 | `scripts/lesson_id.py` |
 | `scripts/` | 只適用某專案的腳本 | 需要時 |
 
-**第一次用**：跑 `python -I ~/.claude/skills/dev-team/scripts/init_local.py`，會建 `<本地>` 並把 `templates/` 的範本複製過去（已經有的不覆蓋）。
+**第一次用**：跑 `python -I ~/.claude/skills/agile-crew/scripts/init_local.py`，會建 `<本地>` 並把 `templates/` 的範本複製過去（已經有的不覆蓋）。
 接著填 `local-rules.md`（你的慣例）與 `private-terms.txt`（不能外流的字）；`config.json` 有專案總表才填。
 範本裡寫了**格式規定**（段落標題、每列以日期或編號開頭）：hook 與腳本靠這個格式解析，格式不對不會報錯、只是讀不到，所以不要改標題。
 沒有本地資料夾也能用技能：開工提醒會提示建立，其他步驟照通用做法。
@@ -50,13 +50,13 @@
 ## 寫完技能一定要檢查
 
 ```
-python -I ~/.claude/skills/dev-team/scripts/check_shareable.py
+python -I ~/.claude/skills/agile-crew/scripts/check_shareable.py
 ```
 
 - 掃 `<本地>/private-terms.txt` 的字＋通用樣式（email、私有 IP、使用者家目錄路徑），要 **0 行**。
 - 碰到新的公司用語、專案名、人名、主機名，**先加進 `private-terms.txt`**（只列專有名詞會漏掉內部簡稱，要一起列）。
 - 開工 hook 也會跑一次；有命中會出現在開工提醒裡。
-- 分享前再用空的本地資料夾模擬新使用者：`DEV_TEAM_LOCAL=<空資料夾>` 跑一次 `hooks/session_brief.py`，看別人開工會看到什麼（不該看到你的待辦或歷史）。
+- 分享前再用空的本地資料夾模擬新使用者：`AGILE_CREW_LOCAL=<空資料夾>` 跑一次 `hooks/session_brief.py`，看別人開工會看到什麼（不該看到你的待辦或歷史）。
 - 改寫成通用版時**只刪私人資料，不准順手精簡**：改寫後「以後的做法」比原文短 5% 以上的列，要逐列確認少掉的只是私人資料。
 
 ## 分享技能

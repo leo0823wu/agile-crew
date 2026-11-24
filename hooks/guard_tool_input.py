@@ -1,4 +1,4 @@
-"""PreToolUse 自動擋（2026-10-29 使用者同意加；編號見 ~/.claude/skills/dev-team/references/lessons.md）。
+"""PreToolUse 自動擋（2026-10-29 使用者同意加；編號見 ~/.claude/skills/agile-crew/references/lessons.md）。
 
 1) L-032 Edit 的 old_string / new_string 以空格或 Tab 結尾 → 擋。
    編輯工具會吃掉結尾空白（10/28、10/29 兩次，兩個啟動參數黏在一起）。
@@ -36,20 +36,20 @@
    （曾經隔天才發現）。
 16) L-080 第三次 ssh／scp 連「帳號@IPv4」而這個 IP 不在 ~/.ssh/config → 擋（新機器）：先讀部署說明文件、
    用 scripts/pubkey_cmd.py 產佈公鑰指令給使用者，不要自己先 ssh 試、不要手寫（pipe 公鑰會變 0 bytes）。
-   config 讀不到就放行；測試用 DEV_TEAM_SSH_CONFIG 指定 config。
+   config 讀不到就放行；測試用 AGILE_CREW_SSH_CONFIG 指定 config。
 17) L-014 再犯（只在 Windows 的 Bash）ssh 指令用 `<` 把本機檔案餵給遠端（`ssh.exe 別名 'bash -s' < x.sh`）→ 擋；
    Windows 的 ssh 讀 Git Bash 轉進來的 stdin 會卡住（2026-11-19）。改 scp 上傳＋bash /tmp/x.sh 或 remote_run.py。
 
 擋下＝exit 2，stderr 的說明會回給 Claude。腳本自己出錯一律放行（exit 0），不卡正常工作。
-測試：python -I ~/.claude/skills/dev-team/hooks/test_guard_tool_input.py（每條規則都有該擋／不該擋的對照）。
+測試：python -I ~/.claude/skills/agile-crew/hooks/test_guard_tool_input.py（每條規則都有該擋／不該擋的對照）。
 """
 import json
 import os
 import re
 import sys
 
-# 規則 5、7 只在 Windows（Git Bash）適用；測試可用 DEV_TEAM_GUARD_OS=posix 模擬其他系統
-IS_WINDOWS = (os.environ.get("DEV_TEAM_GUARD_OS") or os.name) == "nt"
+# 規則 5、7 只在 Windows（Git Bash）適用；測試可用 AGILE_CREW_GUARD_OS=posix 模擬其他系統
+IS_WINDOWS = (os.environ.get("AGILE_CREW_GUARD_OS") or os.name) == "nt"
 
 PY_TOKEN = re.compile(
     r"""(?:^|[\s;&|(`])["']?(?:[^\s"';&|]*[/\\])?(?:python(?:\d+(?:\.\d+)?)?|py)(?:\.exe)?["']?(?=\s|$)""",
@@ -329,7 +329,7 @@ REMOTE_BG = re.compile(r"\bssh(?:\.exe)?\b[^\n]*\bnohup\s+[^\n]*?(?<![&>|])&(?![
 MSG_REMOTE_BG = (
     "已擋下（自動檢查 L-033）：{why}。ssh 常會等遠端背景工作做完才回（2026-10-29、11-11 兩次逾時），"
     "被 timeout 砍掉時 Windows ssh.exe 的輸出會整段遺失，看不出有沒有啟動。\n"
-    "請改用 `python -X utf8 -I -u ~/.claude/skills/dev-team/scripts/remote_run.py <主機別名> <主機工作資料夾> <log 檔名> <結束字樣> \"<指令>\" [要上傳的本機檔 ...]`"
+    "請改用 `python -X utf8 -I -u ~/.claude/skills/agile-crew/scripts/remote_run.py <主機別名> <主機工作資料夾> <log 檔名> <結束字樣> \"<指令>\" [要上傳的本機檔 ...]`"
     "（上傳、背景啟動、斷線重試讀 log 到出現結束字樣都包好了）。"
 )
 
@@ -410,13 +410,13 @@ MSG_NEW_HOST = (
     "已擋下（自動檢查 L-080）：{why}。新機器先不要自己 ssh 試，也不要手寫佈公鑰指令"
     "（pipe 公鑰給 Windows 的 ssh 會被當密碼吃掉、authorized_keys 變 0 bytes）。\n"
     "請先讀本地規則指定的部署說明文件裡「新機器佈公鑰」那節，"
-    "用 `python -X utf8 -I ~/.claude/skills/dev-team/scripts/pubkey_cmd.py <IP> <PORT> <帳號>` 產生單行指令給使用者在自己的 PowerShell 跑；"
+    "用 `python -X utf8 -I ~/.claude/skills/agile-crew/scripts/pubkey_cmd.py <IP> <PORT> <帳號>` 產生單行指令給使用者在自己的 PowerShell 跑；"
     "印 DONE 後先在 ~/.ssh/config 加別名（註明尚未驗證），再用別名＋BatchMode=yes 驗證。"
 )
 
 
 def ssh_config_hosts():
-    path = os.environ.get("DEV_TEAM_SSH_CONFIG") or os.path.join(os.path.expanduser("~"), ".ssh", "config")
+    path = os.environ.get("AGILE_CREW_SSH_CONFIG") or os.path.join(os.path.expanduser("~"), ".ssh", "config")
     hosts = set()
     with open(path, encoding="utf-8", errors="replace") as f:
         for line in f:
@@ -432,7 +432,7 @@ SSH_STDIN = re.compile(r"(?:^|[\s;&|(`])(?:[^\s;&|()`\"']*[/\\])?ssh(?:\.exe)?\s
 MSG_SSH_STDIN = (
     "已擋下（自動檢查 L-014）：{why}。Windows 的 ssh 從 Git Bash 讀 stdin 會卡住、遠端沒執行（2026-11-19 卡 3 分鐘）。\n"
     "改成：Write 寫 LF 的 .sh → `scp.exe 檔 別名:/tmp/` → `ssh.exe 別名 'bash /tmp/x.sh; rm -f /tmp/x.sh'`，"
-    "或用 `python -X utf8 -I -u ~/.claude/skills/dev-team/scripts/remote_run.py`。"
+    "或用 `python -X utf8 -I -u ~/.claude/skills/agile-crew/scripts/remote_run.py`。"
 )
 
 

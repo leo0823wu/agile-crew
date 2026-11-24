@@ -160,7 +160,7 @@ def main():
                             reads[k] += 1
                             if not inp.get("offset") and not inp.get("limit"):   # 沒帶範圍才算整份讀（L-255）
                                 whole[k] += 1
-                if name == "Skill" and "dev-team" in str(inp.get("skill", "")):
+                if name == "Skill" and any(k in str(inp.get("skill", "")) for k in ("agile-crew", "dev-team")):   # 舊紀錄用舊名
                     cur["skill"] = True
                 if cur["edit"] is None:
                     fp = str(inp.get("file_path", ""))

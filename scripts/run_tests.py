@@ -1,7 +1,7 @@
 """一次跑技能裡所有的測試（hooks/test_*.py、scripts/test_*.py），並檢查「印出的 failures」跟結束碼對得上。
 
 由來（L-046）：有一支測試失敗時只印 `failures: N`、結束碼還是 0，自動化流程（例：故意改壞檔案、看測試會不會紅）就看不到失敗。
-用法：python -I ~/.claude/skills/dev-team/scripts/run_tests.py
+用法：python -I ~/.claude/skills/agile-crew/scripts/run_tests.py
 """
 import glob
 import os

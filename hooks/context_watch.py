@@ -66,7 +66,7 @@ def build(transcript_path, session_id, warn=WARN, step=STEP, state_dir=None):
         return None
     ctx = last_context(transcript_path)
     lv = level(ctx, warn, step)
-    state_dir = state_dir or os.path.join(tempfile.gettempdir(), "dev-team-context-watch")
+    state_dir = state_dir or os.path.join(tempfile.gettempdir(), "agile-crew-context-watch")
     os.makedirs(state_dir, exist_ok=True)
     state = os.path.join(state_dir, "".join(ch for ch in (session_id or "nosession") if ch.isalnum() or ch in "-_")[:80] + ".txt")
     try:
