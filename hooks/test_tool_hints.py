@@ -54,6 +54,7 @@ TERM = "mcp__terminal__run_in_terminal"
 TAB_RESP = {"tool_response": [{"type": "text", "text": '{"tab_id":"c23","cwd":"x"}\nStarted in new terminal tab "c23"'}]}
 S7 = str(uuid.uuid4())
 S8, S9 = str(uuid.uuid4()), str(uuid.uuid4())
+S10, S11, S12 = str(uuid.uuid4()), str(uuid.uuid4()), str(uuid.uuid4())
 mut_py = script("mutate.py", "import subprocess, shutil\nfor f, old, new in CASES:\n    shutil.copy(f, f + '.bak')\n"
                 "    try:\n        open(f, 'w').write(open(f).read().replace(old, new))\n"
                 "        subprocess.run(['cmd', '/c', 'mvnw.cmd', 'test'])\n    finally:\n        shutil.copy(f + '.bak', f)\n")
@@ -147,6 +148,11 @@ cases = [
      "python -X utf8 -I find_table_readers.py C:/ws sample_table sample_table_result", S5, {}, None),
     ("SQL：查過的表再跑寫入 .sql → 安靜", "PreToolUse", "Bash", f"python -I db_local.py \"{write_sql}\"", S5, {}, None),
     ("SQL：暫存表 tmp_* 不算 → 安靜", "PreToolUse", "Bash", f"python -I db_local.py \"{tmp_sql}\"", S6, {}, None),
+    # L-028 推送前提醒獨立驗收（每個工作階段只提醒一次）
+    ("推送：git push → 提醒", "PreToolUse", "PowerShell", "git push origin main", S10, {}, "L-028"),
+    ("推送：同工作階段第二次 → 安靜", "PreToolUse", "Bash", "git -C /x/repo push", S10, {}, None),
+    ("推送：別的工作階段 git -C 路徑 push → 提醒", "PreToolUse", "Bash", "git -C /x/repo push -u origin dev", S11, {}, "L-028"),
+    ("推送：git pull、git log 不算 → 安靜", "PreToolUse", "Bash", "git pull; git log --oneline pushed", S12, {}, None),
 ]
 # 只在 Windows 成立的案例（PowerShell 反斜線路徑：macOS／Linux 的反斜線不是路徑分隔，找不到檔本來就不提醒）
 WINDOWS_ONLY = {"執行前：PowerShell $env: 路徑 → 提醒"}

@@ -48,6 +48,9 @@ HANG_055 = ("L-055：Bash 逾時了。如果剛才是簡單指令（cat／sed／
             "要清殘留程序可用 PowerShell `Get-Process bash | Stop-Process`（先確認沒有自己要的背景工作）。"
             "如果是本來就要跑很久的工作（上傳、建置、測試），改用 run_in_background。")
 SH_FILE = re.compile(r"(?:^|[\s;&|(\"'])(?:bash|sh)\s+[\"']?([^\s\"']+\.sh)\b")
+GIT_PUSH = re.compile(r"\bgit\b(?:\s+-C\s+\S+)?(?:\s+-c\s+\S+)*\s+push\b")
+PUSH_QA_028 = ("L-028：要推送了。中、大的需求推之前要有獨立驗收（QA 子代理看 diff、出對抗測試），自己跑的測試與回歸不算；"
+               "還沒驗就先開 QA，驗完再推。小的需求忽略這則。")
 MIGRATE_105 = ("L-105：這是在把 repo 整批推到新主機嗎？只推 `refs/heads/*` 會漏掉只存在遠端追蹤裡的分支（本機常只有 master）。"
                "要一起推 `refs/remotes/origin/<分支>:refs/heads/<分支>`（本機沒有同名分支的那些），加 tags；"
                "推之前查 shallow、LFS；推完 `ls-remote` 逐分支比對 SHA 才改本機遠端。")
@@ -366,6 +369,12 @@ def main():
                 hints.append(CRLF_070.format(files="、".join(crlf)))
         if pushes_heads_only(cmd, data.get("cwd")):
             hints.append(MIGRATE_105)
+        if GIT_PUSH.search(cmd):
+            st = load_state(session)
+            if not st.get("push_qa_hinted"):
+                st["push_qa_hinted"] = True
+                save_state(session, st)
+                hints.append(PUSH_QA_028)
         if remote_restart_unchecked(cmd, data.get("cwd")):
             hints.append(RESTART_156)
         kept = scratch_scripts_removed(cmd)
